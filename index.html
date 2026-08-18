@@ -1061,8 +1061,9 @@ function doPost(e) {
             ]
         };
 
+        const DEFAULT_GOOGLE_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbx8fdK_vm9KHc_pf5oYMQqFZ0Pe6k2hCECfwov4oBpVXdvDJsjKlosRP8LLu4Gs9dL4/exec';
         let activeTab = 'dashboard';
-        let googleWebAppUrl = localStorage.getItem('fn_erp_google_web_app_url') || '';
+        let googleWebAppUrl = localStorage.getItem('fn_erp_google_web_app_url') || DEFAULT_GOOGLE_WEB_APP_URL;
         let projectChartInstance = null;
         let costChartInstance = null;
 
@@ -1071,10 +1072,11 @@ function doPost(e) {
             loadLocalData();
             if (googleWebAppUrl) {
                 document.getElementById('googleWebAppUrl').value = googleWebAppUrl;
-                updateSyncBadge(true, 'Google Sheets Birləşib');
+                updateSyncBadge(false, 'Google Sheets Yüklənir');
             }
             renderAllViews();
             initCharts();
+            loadDataFromSheets();
         });
 
         function openModal(modalId) {
@@ -1754,6 +1756,82 @@ function doPost(e) {
             }
         }
 
+        function rowsToObjects(rows) {
+            if (!Array.isArray(rows) || rows.length < 2) return [];
+            const headers = rows[0];
+            return rows.slice(1)
+                .filter(row => Array.isArray(row) && row.some(value => value !== '' && value !== null))
+                .map(row => Object.fromEntries(headers.map((header, index) => [header, row[index]])));
+        }
+
+        function applySheetsData(sheetData) {
+            const projects = rowsToObjects(sheetData.Projects);
+            const materials = rowsToObjects(sheetData.Materials);
+            const subcontractors = rowsToObjects(sheetData.Subcontractors);
+            const finance = rowsToObjects(sheetData.Finance);
+            const employees = rowsToObjects(sheetData.Employees);
+            const procurement = rowsToObjects(sheetData.Procurement);
+            const suppliers = rowsToObjects(sheetData.Suppliers);
+
+            if (projects.length) erpData.projects = projects.map(p => ({
+                id: p['ID'], name: p['Layihə Adı'], client: p['Sifarişçi'], location: p['Ünvan'],
+                budget: Number(p['Büdcə']) || 0, spent: Number(p['Faktiki Xərc']) || 0,
+                progress: Number(p['İcra %']) || 0, status: p['Status'],
+                startDate: p['Başlama'], endDate: p['Bitmə']
+            }));
+            if (materials.length) erpData.materials = materials.map(m => ({
+                sku: m['SKU'], name: m['Material Adı'], category: m['Kateqoriya'], unit: m['Vahid'],
+                price: Number(m['Qiymət']) || 0, stock: Number(m['Stok']) || 0
+            }));
+            if (subcontractors.length) erpData.subcontractors = subcontractors.map(s => ({
+                id: s['ID'], name: s['Subpodratçı'], project: s['Layihə'], scope: s['İşin Sahəsi'],
+                contractAmount: Number(s['Müqavilə']) || 0, paidAmount: Number(s['Ödənilən']) || 0,
+                form2Status: s['Form-2']
+            }));
+            if (finance.length) erpData.finance = finance.map(f => ({
+                date: f['Tarix'], project: f['Layihə'], desc: f['Təsvir'], category: f['Kateqoriya'],
+                type: f['Növ'], amount: Number(f['Məbləğ']) || 0
+            }));
+            if (employees.length) erpData.employees = employees.map(e => ({
+                name: e['Ad Soyad'], role: e['Vəzifə'], project: e['Layihə'],
+                salary: Number(e['Maaş']) || 0, phone: e['Telefon'], status: e['Status'] || 'Aktiv'
+            }));
+            if (procurement.length) erpData.procurement = procurement.map(p => ({
+                id: p['ID'], date: p['Tarix'], project: p['Layihə'], item: p['Material/Avadanlıq'],
+                quantity: Number(p['Miqdar']) || 0, unit: p['Vahid'], unitPrice: Number(p['Vahid Qiyməti']) || 0,
+                estimatedCost: Number(p['Dəyər']) || 0, requestedBy: p['Sorğu Verən'],
+                supplier: p['Təchizatçı'], priority: p['Təcililik'], status: p['Status']
+            }));
+            if (suppliers.length) erpData.suppliers = suppliers.map(s => ({
+                name: s['Şirkət Adı'], category: s['Kateqoriya'], contactPerson: s['Əlaqəli Şəxs'],
+                phone: s['Telefon'], address: s['Ünvan']
+            }));
+        }
+
+        async function loadDataFromSheets() {
+            if (!googleWebAppUrl) return;
+            try {
+                const response = await fetch(`${googleWebAppUrl}?t=${Date.now()}`, { cache: 'no-store' });
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const sheetData = await response.json();
+                const hasErpSheets = ['Projects', 'Materials', 'Finance', 'Employees', 'Procurement']
+                    .some(name => Array.isArray(sheetData[name]) && sheetData[name].length > 1);
+
+                if (hasErpSheets) {
+                    applySheetsData(sheetData);
+                    renderAllViews();
+                } else {
+                    syncDataWithSheets();
+                }
+                updateSyncBadge(true, 'Google Sheets Birləşib');
+                document.getElementById('lastSyncTime').innerText = 'Google Sync: ' + new Date().toLocaleTimeString();
+            } catch (error) {
+                console.error('Sheets load error', error);
+                updateSyncBadge(false, 'Lokal Rejim');
+                document.getElementById('lastSyncTime').innerText = 'Sheets oxunmadı — lokal məlumat göstərilir';
+            }
+        }
+
         function saveAndTestConnection() {
             const url = document.getElementById('googleWebAppUrl').value.trim();
             if (!url) {
@@ -1867,6 +1945,10 @@ function doPost(e) {
                 Finance: [
                     ['Tarix', 'Layihə', 'Təsvir', 'Kateqoriya', 'Növ', 'Məbləğ'],
                     ...erpData.finance.map(f => [f.date, f.project, f.desc, f.category, f.type, f.amount])
+                ],
+                Employees: [
+                    ['Ad Soyad', 'Vəzifə', 'Layihə', 'Maaş', 'Telefon', 'Status'],
+                    ...erpData.employees.map(e => [e.name, e.role, e.project, e.salary, e.phone, e.status])
                 ],
                 Procurement: [
                     ['ID', 'Tarix', 'Layihə', 'Material/Avadanlıq', 'Miqdar', 'Vahid', 'Vahid Qiyməti', 'Dəyər', 'Sorğu Verən', 'Təchizatçı', 'Təcililik', 'Status'],
