@@ -1,0 +1,2002 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FN Construction ERP - Layihə Əsaslı İdarəetmə</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js for analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- SheetJS for Excel export -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        construction: {
+                            50: '#fffbe1',
+                            100: '#fef3c7',
+                            500: '#f59e0b',
+                            600: '#d97706',
+                            700: '#b45309',
+                            800: '#92400e',
+                            900: '#78350f',
+                        },
+                        navy: {
+                            800: '#1e293b',
+                            900: '#0f172a',
+                            950: '#020617',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans flex h-screen overflow-hidden">
+
+    <!-- Sidebar Navigation -->
+    <aside class="w-64 bg-navy-900 text-slate-300 flex flex-col justify-between flex-shrink-0 transition-all duration-300 shadow-xl z-20">
+        <div>
+            <!-- Company Logo Section -->
+            <div class="h-16 flex items-center justify-between px-6 bg-navy-950 border-b border-slate-800">
+                <div class="flex items-center space-x-3">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-600 flex items-center justify-center text-white font-extrabold text-lg shadow-lg shadow-amber-500/20">
+                        FN
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-white text-base tracking-wider leading-none">FN Construction</h1>
+                        <span class="text-[10px] text-amber-400 font-semibold tracking-widest uppercase">Project ERP v2.0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="mt-5 px-3 space-y-1">
+                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold transition-all text-white bg-amber-600 shadow-md shadow-amber-600/30">
+                    <i class="fa-solid fa-chart-line w-5 text-center text-sm"></i>
+                    <span>Ana Səhifə & Analitika</span>
+                </button>
+
+                <button onclick="switchTab('projects')" id="nav-projects" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold transition-all text-slate-400 hover:text-white hover:bg-slate-800">
+                    <i class="fa-solid fa-person-digging w-5 text-center text-sm"></i>
+                    <span>Tikinti Layihələri</span>
+                </button>
+
+                <button onclick="switchTab('materials')" id="nav-materials" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold transition-all text-slate-400 hover:text-white hover:bg-slate-800">
+                    <i class="fa-solid fa-cubes-stacked w-5 text-center text-sm"></i>
+                    <span>Material & Texnika Anbarı</span>
+                </button>
+
+                <button onclick="switchTab('subcontractors')" id="nav-subcontractors" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold transition-all text-slate-400 hover:text-white hover:bg-slate-800">
+                    <i class="fa-solid fa-handshake-angle w-5 text-center text-sm"></i>
+                    <span>Subpodratçılar & Smeta</span>
+                </button>
+
+                <button onclick="switchTab('finance')" id="nav-finance" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold transition-all text-slate-400 hover:text-white hover:bg-slate-800">
+                    <i class="fa-solid fa-vault w-5 text-center text-sm"></i>
+                    <span>Layihə Maliyyəsi & Kassa</span>
+                </button>
+
+                <button onclick="switchTab('hr')" id="nav-hr" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold transition-all text-slate-400 hover:text-white hover:bg-slate-800">
+                    <i class="fa-solid fa-users-gear w-5 text-center text-sm"></i>
+                    <span>İşçi Heyəti & Briqadalar</span>
+                </button>
+
+                <button onclick="switchTab('procurement')" id="nav-procurement" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold transition-all text-slate-400 hover:text-white hover:bg-slate-800">
+                    <i class="fa-solid fa-cart-flatbed w-5 text-center text-sm"></i>
+                    <span>Satınalma & Təchizat</span>
+                </button>
+
+                <div class="pt-3 border-t border-slate-800/80 my-2"></div>
+
+                <button onclick="switchTab('sheets')" id="nav-sheets" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold transition-all text-emerald-400 hover:bg-emerald-950/30 border border-emerald-500/20">
+                    <i class="fa-solid fa-file-excel w-5 text-center text-sm"></i>
+                    <span>Google Sheets Baza</span>
+                </button>
+            </nav>
+        </div>
+
+        <!-- Connection Badge Status -->
+        <div class="p-4 bg-navy-950 border-t border-slate-800">
+            <div class="flex items-center justify-between text-xs mb-2">
+                <span class="text-slate-400 text-[11px]">Baza Statusu:</span>
+                <span id="syncStatusBadge" class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                    <span class="w-1.5 h-1.5 rounded-full bg-amber-400 mr-1.5 animate-pulse"></span>
+                    Lokal Rejim
+                </span>
+            </div>
+            <button onclick="syncDataWithSheets()" class="w-full text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 py-1.5 px-3 rounded-lg border border-slate-700 flex items-center justify-center space-x-1.5 transition font-medium">
+                <i class="fa-solid fa-rotate text-amber-400 text-xs" id="syncSpinIcon"></i>
+                <span>İndi Sinxron Et</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content Layout -->
+    <div class="flex-1 flex flex-col h-screen overflow-hidden">
+        
+        <!-- Top Header Navbar -->
+        <header class="h-16 bg-white border-b border-slate-200 px-8 flex items-center justify-between flex-shrink-0">
+            <div class="flex items-center space-x-4">
+                <h2 id="pageTitle" class="text-lg font-bold text-slate-800 tracking-tight">FN Construction - İdarəetmə Paneli</h2>
+                <span class="text-[11px] bg-slate-100 text-slate-500 px-2.5 py-1 rounded-full border border-slate-200 font-medium" id="lastSyncTime">Sinxronizasiya: Lokal Yaddaş</span>
+            </div>
+
+            <!-- Global Actions -->
+            <div class="flex items-center space-x-3">
+                <div class="relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                    <input type="text" id="globalSearch" placeholder="Layihə, material, podratçı axtar..." class="pl-8 pr-4 py-1.5 text-xs bg-slate-100 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 w-64 transition">
+                </div>
+
+                <button class="relative p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition" title="Xəbərdarlıqlar">
+                    <i class="fa-regular fa-bell text-base"></i>
+                    <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-amber-500 rounded-full ring-2 ring-white"></span>
+                </button>
+
+                <div class="flex items-center space-x-2 pl-3 border-l border-slate-200">
+                    <div class="w-8 h-8 rounded-lg bg-navy-900 text-amber-400 font-bold text-xs flex items-center justify-center border border-amber-500/30">
+                        FN
+                    </div>
+                    <div class="text-xs hidden md:block">
+                        <div class="font-bold text-slate-700 leading-none">FN İdarə Heyəti</div>
+                        <div class="text-[10px] text-slate-400 mt-0.5">Baş Mühəndis / Admin</div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Scrollable Content Container -->
+        <main class="flex-1 overflow-y-auto p-6 md:p-8 bg-slate-50" id="contentArea">
+
+            <!-- TAB 1: DASHBOARD -->
+            <div id="tab-dashboard" class="tab-content space-y-6">
+                <!-- Top Summary KPI Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
+                        <div class="flex items-center justify-between text-slate-500 mb-2">
+                            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Ümumi Layihə Portfeli</span>
+                            <div class="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                                <i class="fa-solid fa-building text-base"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-black text-slate-800" id="dashTotalPortfolio">0 ₼</div>
+                            <div class="text-xs text-emerald-600 font-semibold mt-1 flex items-center">
+                                <i class="fa-solid fa-circle-check mr-1 text-[10px]"></i> <span id="dashActiveCount">0</span> aktiv tikinti obyekti
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
+                        <div class="flex items-center justify-between text-slate-500 mb-2">
+                            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Faktiki Material & İşçilik Xərci</span>
+                            <div class="w-9 h-9 rounded-xl bg-red-50 text-red-600 flex items-center justify-center">
+                                <i class="fa-solid fa-calculator text-base"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-black text-slate-800" id="dashTotalSpent">0 ₼</div>
+                            <div class="text-xs text-slate-500 font-medium mt-1">İcra olunmuş işlərin xərcləri</div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
+                        <div class="flex items-center justify-between text-slate-500 mb-2">
+                            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Anbar Çeşidi & Kritik Material</span>
+                            <div class="w-9 h-9 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center">
+                                <i class="fa-solid fa-boxes-packing text-base"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-black text-slate-800" id="dashTotalMaterials">0</div>
+                            <div class="text-xs text-amber-600 font-semibold mt-1" id="dashLowStockCount">
+                                0 material minimum həddədir
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
+                        <div class="flex items-center justify-between text-slate-500 mb-2">
+                            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Aktiv İşçi & Subpodratçılar</span>
+                            <div class="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
+                                <i class="fa-solid fa-hard-hat text-base"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-black text-slate-800" id="dashTotalStaff">0</div>
+                            <div class="text-xs text-slate-500 font-medium mt-1">Sifarişçi və podratçılar daxil</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Section -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h3 class="font-bold text-slate-800 text-sm">Layihələr üzrə Büdcə vs Faktiki Xərc Müqayisəsi</h3>
+                                <p class="text-xs text-slate-400">Azn göstəriciləri ilə</p>
+                            </div>
+                            <span class="text-xs bg-slate-100 px-2.5 py-1 rounded text-slate-500 font-medium">FN Projects Analytics</span>
+                        </div>
+                        <div class="h-64">
+                            <canvas id="projectBudgetChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h3 class="font-bold text-slate-800 text-sm">Xərclərin Strateji Bölgüsü</h3>
+                                <p class="text-xs text-slate-400">Tikinti resursları üzrə</p>
+                            </div>
+                        </div>
+                        <div class="h-64 flex items-center justify-center">
+                            <canvas id="costBreakdownChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Construction Projects Table -->
+                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-bold text-slate-800 text-sm">Cari Tikinti Obyektləri və İcra Faizi</h3>
+                        <button onclick="switchTab('projects')" class="text-xs text-amber-600 font-bold hover:underline">
+                            Bütün Layihələr &rarr;
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs text-slate-600">
+                            <thead class="bg-slate-50 text-[11px] font-bold text-slate-500 uppercase">
+                                <tr>
+                                    <th class="p-3 rounded-l-lg">Layihə Adı</th>
+                                    <th class="p-3">Sifarişçi / Məkan</th>
+                                    <th class="p-3">Büdcə (₼)</th>
+                                    <th class="p-3">İcra Faizi</th>
+                                    <th class="p-3">Müddət</th>
+                                    <th class="p-3 rounded-r-lg">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentProjectsTable" class="divide-y divide-slate-100">
+                                <!-- Dynamic JS inserted -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: TİKİNTİ LAYİHƏLƏRİ (PROJECTS) -->
+            <div id="tab-projects" class="tab-content hidden space-y-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <h3 class="text-base font-bold text-slate-800">Tikinti Layihələrinin Portfeli</h3>
+                        <p class="text-xs text-slate-500">FN Construction tərəfindən icra olunan bütün obyektlər və müqavilələr</p>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="exportToExcel('projects')" class="px-3 py-2 text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg border border-slate-300 transition flex items-center space-x-1.5">
+                            <i class="fa-solid fa-file-excel text-emerald-600"></i>
+                            <span>Excel-ə İxrac</span>
+                        </button>
+                        <button onclick="openProjectModal()" class="px-4 py-2 text-xs bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg shadow-md transition flex items-center space-x-1.5">
+                            <i class="fa-solid fa-plus"></i>
+                            <span>Yeni Layihə Yarat</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5" id="projectsCardsContainer">
+                    <!-- Dynamic Project Cards -->
+                </div>
+            </div>
+
+            <!-- TAB 3: MATERIAL VƏ TEXNİKA ANBARI -->
+            <div id="tab-materials" class="tab-content hidden space-y-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <h3 class="text-base font-bold text-slate-800">Tikinti Materialları və Texnika Anbarı</h3>
+                        <p class="text-xs text-slate-500">Məhsul qalıqları, ölçü vahidləri və layihələrə təhkim olunma</p>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="exportToExcel('materials')" class="px-3 py-2 text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg border border-slate-300 transition flex items-center space-x-1">
+                            <i class="fa-solid fa-file-excel text-emerald-600"></i>
+                            <span>Excel</span>
+                        </button>
+                        <button onclick="openMaterialModal()" class="px-4 py-2 text-xs bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg shadow-md transition flex items-center space-x-1.5">
+                            <i class="fa-solid fa-truck-ramp-box"></i>
+                            <span>Yeni Material / Avadanlıq</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                    <div class="p-4 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+                        <input type="text" id="materialSearchInput" onkeyup="filterMaterialsTable()" placeholder="Material adı və ya SKU ilə axtar..." class="px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg w-72 focus:outline-none focus:ring-2 focus:ring-amber-500/20">
+                        <span class="text-xs text-slate-400 font-medium" id="materialCountBadge">0 material tapıldı</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs text-slate-600">
+                            <thead class="bg-slate-100/70 text-[11px] font-bold text-slate-500 uppercase border-b border-slate-200">
+                                <tr>
+                                    <th class="p-3.5">SKU / Kod</th>
+                                    <th class="p-3.5">Material / Avadanlıq Adı</th>
+                                    <th class="p-3.5">Kateqoriya</th>
+                                    <th class="p-3.5">Ölçü Vahidi</th>
+                                    <th class="p-3.5">Vahid Qiyməti (₼)</th>
+                                    <th class="p-3.5">Anbar Qalıq</th>
+                                    <th class="p-3.5 text-right">Əməliyyat</th>
+                                </tr>
+                            </thead>
+                            <tbody id="materialsTableBody" class="divide-y divide-slate-100">
+                                <!-- Dynamic JS inserted -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: SUBPODRATÇILAR VƏ SMETA -->
+            <div id="tab-subcontractors" class="tab-content hidden space-y-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <h3 class="text-base font-bold text-slate-800">Subpodratçılar və Smetaların İdarəsi</h3>
+                        <p class="text-xs text-slate-500">Kənar usta briqadaları, tərəfdaş şirkətlər və Form-2 aktları</p>
+                    </div>
+                    <button onclick="openSubcontractorModal()" class="px-4 py-2 text-xs bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-lg shadow-md transition flex items-center space-x-1.5">
+                        <i class="fa-solid fa-file-contract"></i>
+                        <span>Yeni Subpodratçı Müqaviləsi</span>
+                    </button>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs text-slate-600">
+                            <thead class="bg-slate-100/70 text-[11px] font-bold text-slate-500 uppercase border-b border-slate-200">
+                                <tr>
+                                    <th class="p-3.5">Subpodratçı / Şirkət</th>
+                                    <th class="p-3.5">Layihə</th>
+                                    <th class="p-3.5">İşin Sahəsi / Növü</th>
+                                    <th class="p-3.5">Müqavilə Məbləği</th>
+                                    <th class="p-3.5">Ödənilmiş Məbləğ</th>
+                                    <th class="p-3.5">Form-2 Aktı</th>
+                                    <th class="p-3.5 text-right">Çap / Əməl</th>
+                                </tr>
+                            </thead>
+                            <tbody id="subcontractorsTableBody" class="divide-y divide-slate-100">
+                                <!-- Dynamic JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 5: LAYİHƏ MALİYYƏSİ & KASSA -->
+            <div id="tab-finance" class="tab-content hidden space-y-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <h3 class="text-base font-bold text-slate-800">Layihə Maliyyəsi və Kassa Əməliyyatları</h3>
+                        <p class="text-xs text-slate-500">Layihə bazasında daxil olan ödənişlər, material alışları və xərclər</p>
+                    </div>
+                    <button onclick="openFinanceModal()" class="px-4 py-2 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg shadow-md transition flex items-center space-x-1.5">
+                        <i class="fa-solid fa-money-bill-wave"></i>
+                        <span>Yeni Maliyyə Hərəkəti</span>
+                    </button>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs text-slate-600">
+                            <thead class="bg-slate-100/70 text-[11px] font-bold text-slate-500 uppercase border-b border-slate-200">
+                                <tr>
+                                    <th class="p-3.5">Tarix</th>
+                                    <th class="p-3.5">Layihə Adı</th>
+                                    <th class="p-3.5">Təsvir / Təfərrüat</th>
+                                    <th class="p-3.5">Xərc Növü</th>
+                                    <th class="p-3.5">Əməliyyat Növü</th>
+                                    <th class="p-3.5">Məbləğ (₼)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="financeTableBody" class="divide-y divide-slate-100">
+                                <!-- Dynamic JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 6: İŞÇİ HEYƏTİ VƏ BRİQADALAR -->
+            <div id="tab-hr" class="tab-content hidden space-y-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <h3 class="text-base font-bold text-slate-800">Tikinti Heyəti və İşçi Briqadaları</h3>
+                        <p class="text-xs text-slate-500">Mühəndislər, prorablar, sahə ustaları və aylıq/günlük maaş cədvəli</p>
+                    </div>
+                    <button onclick="openHrModal()" class="px-4 py-2 text-xs bg-navy-900 hover:bg-slate-800 text-white font-bold rounded-lg shadow-md transition flex items-center space-x-1.5">
+                        <i class="fa-solid fa-user-plus"></i>
+                        <span>İşçi / Prorab Əlavə Et</span>
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5" id="hrCardsContainer">
+                    <!-- Dynamic HR Cards -->
+                </div>
+            </div>
+
+            <!-- TAB 8: SATIN ALMA VƏ TƏCHİZAT (PROCUREMENT) -->
+            <div id="tab-procurement" class="tab-content hidden space-y-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <h3 class="text-base font-bold text-slate-800">Satınalma və Təchizat İdarəetməsi</h3>
+                        <p class="text-xs text-slate-500">Tikinti sahələrindən gələn material sorğuları, təchizatçı tərəfdaşlar və təsli̇mat statusu</p>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="openSupplierModal()" class="px-3 py-2 text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg border border-slate-300 transition flex items-center space-x-1.5">
+                            <i class="fa-solid fa-truck-field text-amber-600"></i>
+                            <span>Yeni Təchizatçı</span>
+                        </button>
+                        <button onclick="openProcurementModal()" class="px-4 py-2 text-xs bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg shadow-md transition flex items-center space-x-1.5">
+                            <i class="fa-solid fa-cart-plus"></i>
+                            <span>Yeni Satınalma Sorğusu</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- KPI Mini Cards for Procurement -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
+                            <i class="fa-solid fa-clock"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs text-slate-400 font-medium">Gözləyən Sorğular</div>
+                            <div class="text-lg font-bold text-slate-800" id="procPendingCount">0</div>
+                        </div>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+                            <i class="fa-solid fa-truck-arrow-right"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs text-slate-400 font-medium">Sifariş Olunub (Yolda)</div>
+                            <div class="text-lg font-bold text-slate-800" id="procOrderedCount">0</div>
+                        </div>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+                            <i class="fa-solid fa-circle-check"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs text-slate-400 font-medium">Təhvil Verilən Sorğular</div>
+                            <div class="text-lg font-bold text-slate-800" id="procDeliveredCount">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Procurement Requests Table -->
+                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                    <div class="p-4 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+                        <h4 class="font-bold text-slate-800 text-xs">Satınalma Sorğuları Jurnalı</h4>
+                        <span class="text-xs text-slate-400 font-medium" id="procurementCountBadge">0 sorğu</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs text-slate-600">
+                            <thead class="bg-slate-100/70 text-[11px] font-bold text-slate-500 uppercase border-b border-slate-200">
+                                <tr>
+                                    <th class="p-3.5">Sorğu Kodu / Tarix</th>
+                                    <th class="p-3.5">Layihə Adı</th>
+                                    <th class="p-3.5">Material / Avadanlıq</th>
+                                    <th class="p-3.5">Miqdar & Vahid</th>
+                                    <th class="p-3.5">Vahid Qiyməti (₼)</th>
+                                    <th class="p-3.5">Sorğu Verən</th>
+                                    <th class="p-3.5">Təchizatçı</th>
+                                    <th class="p-3.5">Cəmi Dəyər (₼)</th>
+                                    <th class="p-3.5">Təcililik</th>
+                                    <th class="p-3.5">Status</th>
+                                    <th class="p-3.5 text-right">Əməliyyat / Keçid</th>
+                                </tr>
+                            </thead>
+                            <tbody id="procurementTableBody" class="divide-y divide-slate-100">
+                                <!-- Dynamic JS inserted -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Suppliers List -->
+                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h4 class="font-bold text-slate-800 text-xs">Tərəfdaş Təchizatçılar Bazası</h4>
+                        <span class="text-[11px] text-slate-400" id="supplierCountBadge">0 təchizatçı</span>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="suppliersContainer">
+                        <!-- Dynamic JS inserted -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 7: GOOGLE SHEETS SETUP & CONNECT -->
+            <div id="tab-sheets" class="tab-content hidden space-y-6">
+                <div class="bg-gradient-to-r from-navy-900 via-slate-900 to-amber-950 text-white p-8 rounded-2xl shadow-xl border border-amber-500/20">
+                    <div class="max-w-3xl">
+                        <span class="px-3 py-1 bg-amber-500/20 text-amber-300 rounded-full text-xs font-bold uppercase tracking-wider border border-amber-500/30">FN Cloud Database</span>
+                        <h2 class="text-2xl font-black mt-3 mb-2">Google Sheets-i FN Construction ERP Bazasına Çevirin</h2>
+                        <p class="text-xs text-slate-300 leading-relaxed">
+                            Google Sheets faylınızı real-vaxt rejimində layihə, anbar, podratçı və maliyyə məlumatlarını saxlayan pulsuz bulud bazasına çevirin.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Step 1: Apps Script Generator -->
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
+                        <div class="flex items-center space-x-3">
+                            <span class="w-8 h-8 rounded-full bg-amber-100 text-amber-700 font-extrabold flex items-center justify-center text-xs">1</span>
+                            <h3 class="font-bold text-slate-800 text-sm">Google Apps Script Kodunu Kopyalayın</h3>
+                        </div>
+                        <p class="text-xs text-slate-500">
+                            Google Sheets faylınızda <b>Extensions (Uzantılar)</b> &rarr; <b>Apps Script</b> hissəsinə keçin. Köhnə kodu silib bu xüsusi FN Construction kopyalayın:
+                        </p>
+                        
+                        <div class="relative">
+                            <textarea id="appsScriptCode" readonly class="w-full h-56 p-3 bg-slate-900 text-amber-400 font-mono text-[11px] rounded-xl border border-slate-800 focus:outline-none resize-none leading-normal">
+function doGet(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet();
+  var data = {};
+  var sheets = sheet.getSheets();
+  for (var i = 0; i < sheets.length; i++) {
+    var name = sheets[i].getName();
+    var values = sheets[i].getDataRange().getValues();
+    data[name] = values;
+  }
+  return ContentService.createTextOutput(JSON.stringify(data)).setMimeType(ContentService.MimeType.JSON);
+}
+
+function doPost(e) {
+  try {
+    var payload = JSON.parse(e.postData.contents);
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    
+    for (var sheetName in payload) {
+      var sheet = ss.getSheetByName(sheetName);
+      if (!sheet) {
+        sheet = ss.insertSheet(sheetName);
+      }
+      sheet.clear();
+      var rows = payload[sheetName];
+      if (rows && rows.length > 0) {
+        sheet.getRange(1, 1, rows.length, rows[0].length).setValues(rows);
+      }
+    }
+    return ContentService.createTextOutput(JSON.stringify({status: "success"})).setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({status: "error", message: err.toString()})).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+</textarea>
+                            <button onclick="copyAppsScriptCode()" class="absolute top-3 right-3 bg-slate-800 hover:bg-slate-700 text-white text-xs px-2.5 py-1.5 rounded border border-slate-700 transition">
+                                <i class="fa-regular fa-copy mr-1"></i> Kopyala
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Web App URL Configuration -->
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
+                        <div class="flex items-center space-x-3">
+                            <span class="w-8 h-8 rounded-full bg-amber-100 text-amber-700 font-extrabold flex items-center justify-center text-xs">2</span>
+                            <h3 class="font-bold text-slate-800 text-sm">Deploy Və Web App URL Daxil Et</h3>
+                        </div>
+                        
+                        <div class="text-xs text-slate-600 space-y-2 leading-relaxed bg-slate-50 p-4 rounded-xl border border-slate-200">
+                            <p class="font-bold text-slate-700">Apps Script Yayımlama Addımları:</p>
+                            <ol class="list-decimal list-inside space-y-1 text-slate-500">
+                                <li>Sağ yuxarıda <b>Deploy &rarr; New Deployment</b> düyməsini sıxın.</li>
+                                <li><b>Select type &rarr; Web app</b> seçin.</li>
+                                <li><i>Execute as:</i> <b>Me</b>, <i>Who has access:</i> <b>Anyone</b> seçin.</li>
+                                <li><b>Deploy</b> edib aldığınız Web App URL ünvanını aşağıya yapışdırın.</li>
+                            </ol>
+                        </div>
+
+                        <div class="space-y-1.5 pt-1">
+                            <label class="block text-xs font-bold text-slate-700">Google Web App URL Ünvanı:</label>
+                            <input type="url" id="googleWebAppUrl" placeholder="https://script.google.com/macros/s/.../exec" class="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500">
+                        </div>
+
+                        <div class="flex items-center space-x-3 pt-2">
+                            <button onclick="saveAndTestConnection()" class="px-5 py-2.5 text-xs bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg shadow-md transition flex items-center space-x-2">
+                                <i class="fa-solid fa-plug"></i>
+                                <span>Qoşul və Sinxronlaşdır</span>
+                            </button>
+                            <button onclick="resetToLocalData()" class="px-4 py-2.5 text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg transition">
+                                Lokal Baza Yarat
+                            </button>
+                        </div>
+
+                        <div id="connectionFeedback" class="hidden text-xs p-3 rounded-lg"></div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- MODAL: Project Add/Edit -->
+    <div id="projectModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-2xl w-full max-w-lg p-6 shadow-2xl border border-slate-100">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                <h3 class="font-bold text-slate-800 text-base">Yeni Tikinti Layihəsi Yarat</h3>
+                <button onclick="closeModal('projectModal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="projectForm" onsubmit="saveProject(event)" class="space-y-4 mt-4 text-xs">
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Layihənin Adı</label>
+                    <input type="text" id="projName" placeholder="Məs: Park Residence - B Korpusu" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500/20 focus:outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Sifarişçi / İnvestor</label>
+                        <input type="text" id="projClient" placeholder="Məs: Paşa İnşaat MMC" required class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Məkan / Ünvan</label>
+                        <input type="text" id="projLocation" placeholder="Məs: Nərimanov r." required class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                    </div>
+                </div>
+                <div class="grid grid-cols-3 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Büdcə (₼)</label>
+                        <input type="number" id="projBudget" placeholder="150000" required class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">İcra Faizi (%)</label>
+                        <input type="number" min="0" max="100" id="projProgress" value="10" required class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Status</label>
+                        <select id="projStatus" class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                            <option value="İcrada">İcrada</option>
+                            <option value="Planlaşdırılır">Planlaşdırılır</option>
+                            <option value="Tamamlandı">Tamamlandı</option>
+                            <option value="Gecikir">Gecikir</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Başlama Tarixi</label>
+                        <input type="date" id="projStartDate" required class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Bitmə Tarixi</label>
+                        <input type="date" id="projEndDate" required class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                    </div>
+                </div>
+                <div class="pt-3 flex justify-end space-x-2">
+                    <button type="button" onclick="closeModal('projectModal')" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg font-semibold">Ləğv Et</button>
+                    <button type="submit" class="px-4 py-2 bg-amber-600 text-white rounded-lg font-bold shadow hover:bg-amber-700">Yadda Saxla</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: Material Creation -->
+    <div id="materialModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl border border-slate-100">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                <h3 class="font-bold text-slate-800 text-base">Yeni Material / Avadanlıq Əlavə Et</h3>
+                <button onclick="closeModal('materialModal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="materialForm" onsubmit="saveMaterial(event)" class="space-y-4 mt-4 text-xs">
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Material Adı</label>
+                    <input type="text" id="matName" placeholder="Məs: Armatur A500C 12mm" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500/20 focus:outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">SKU / Material Kodu</label>
+                        <input type="text" id="matSKU" placeholder="MAT-101" required class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Kateqoriya</label>
+                        <select id="matCategory" class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                            <option value="Xammal & Metal">Xammal & Metal</option>
+                            <option value="Beton & Sement">Beton & Sement</option>
+                            <option value="Hörgü & İzolasiya">Hörgü & İzolasiya</option>
+                            <option value="Ağır Texnika">Ağır Texnika</option>
+                            <option value="Elektrik & Santexnika">Elektrik & Santexnika</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-3 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Ölçü Vahidi</label>
+                        <select id="matUnit" class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                            <option value="Ton">Ton</option>
+                            <option value="m³">m³</option>
+                            <option value="m²">m²</option>
+                            <option value="Ədəd">Ədəd</option>
+                            <option value="Kisə">Kisə</option>
+                            <option value="Növbə/Saat">Növbə/Saat</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Vahid Qiyməti (₼)</label>
+                        <input type="number" step="0.01" id="matPrice" required class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Stok Miqdarı</label>
+                        <input type="number" id="matStock" required class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                    </div>
+                </div>
+                <div class="pt-3 flex justify-end space-x-2">
+                    <button type="button" onclick="closeModal('materialModal')" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg font-semibold">Ləğv Et</button>
+                    <button type="submit" class="px-4 py-2 bg-amber-600 text-white rounded-lg font-bold shadow hover:bg-amber-700">Yadda Saxla</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: Subcontractor Contract -->
+    <div id="subcontractorModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl border border-slate-100">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                <h3 class="font-bold text-slate-800 text-base">Yeni Subpodratçı Müqaviləsi</h3>
+                <button onclick="closeModal('subcontractorModal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="subcontractorForm" onsubmit="saveSubcontractor(event)" class="space-y-4 mt-4 text-xs">
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Subpodratçı Şirkət / Usta</label>
+                    <input type="text" id="subName" placeholder="Məs: AzDəmir Konstruksiya MMC" required class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Ait Olduğu Layihə</label>
+                    <select id="subProject" required class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                        <!-- Dynamic projects -->
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Görüləcək İşin Təsviri</label>
+                    <input type="text" id="subScope" placeholder="Məs: Beton karkas montaj işləri" required class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Müqavilə Məbləği (₼)</label>
+                        <input type="number" id="subContractAmount" required class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Ödənilmiş Məbləğ (₼)</label>
+                        <input type="number" id="subPaidAmount" required class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                    </div>
+                </div>
+                <div class="pt-3 flex justify-end space-x-2">
+                    <button type="button" onclick="closeModal('subcontractorModal')" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg font-semibold">Ləğv Et</button>
+                    <button type="submit" class="px-4 py-2 bg-slate-900 text-white rounded-lg font-bold shadow hover:bg-slate-800">Təsdiqlə</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: Finance Transaction -->
+    <div id="financeModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl border border-slate-100">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                <h3 class="font-bold text-slate-800 text-base">Yeni Layihə Maliyyə Hərəkəti</h3>
+                <button onclick="closeModal('financeModal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="financeForm" onsubmit="saveFinance(event)" class="space-y-4 mt-4 text-xs">
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Əlaqəli Layihə</label>
+                    <select id="finProject" required class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                        <!-- Dynamic projects -->
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Təsvir / Şərh</label>
+                    <input type="text" id="finDesc" placeholder="Məs: 15 ton beton alış ödənişi" required class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                </div>
+                <div class="grid grid-cols-3 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Növü</label>
+                        <select id="finType" class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                            <option value="Xərc">Xərc</option>
+                            <option value="Gəlir">Gəlir (Sifarişçi Avansı)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Xərc Bölməsi</label>
+                        <select id="finCategory" class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                            <option value="Material Alışı">Material Alışı</option>
+                            <option value="İşçilik & Maaş">İşçilik & Maaş</option>
+                            <option value="Texnika İcarəsi">Texnika İcarəsi</option>
+                            <option value="Subpodratçı">Subpodratçı</option>
+                            <option value="İnzibati / Digər">İnzibati / Digər</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Məbləğ (₼)</label>
+                        <input type="number" id="finAmount" required class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                    </div>
+                </div>
+                <div class="pt-3 flex justify-end space-x-2">
+                    <button type="button" onclick="closeModal('financeModal')" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg font-semibold">Ləğv Et</button>
+                    <button type="submit" class="px-4 py-2 bg-emerald-600 text-white rounded-lg font-bold shadow hover:bg-emerald-700">Yadda Saxla</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: HR Creation -->
+    <div id="hrModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl border border-slate-100">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                <h3 class="font-bold text-slate-800 text-base">Yeni İşçi / Prorab Əlavə Et</h3>
+                <button onclick="closeModal('hrModal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="hrForm" onsubmit="saveHr(event)" class="space-y-4 mt-4 text-xs">
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Ad, Soyad</label>
+                    <input type="text" id="hrName" placeholder="Məs: Əli Əliyev" required class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Vəzifə / İxtisas</label>
+                        <input type="text" id="hrRole" placeholder="Məs: Baş Mühəndis" required class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Təhkim Olunduğu Layihə</label>
+                        <select id="hrProject" class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                            <!-- Dynamic projects -->
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Aylıq Maaş (₼)</label>
+                        <input type="number" id="hrSalary" required class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Telefon</label>
+                        <input type="text" id="hrPhone" placeholder="+994 50 123 45 67" required class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                    </div>
+                </div>
+                <div class="pt-3 flex justify-end space-x-2">
+                    <button type="button" onclick="closeModal('hrModal')" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg font-semibold">Ləğv Et</button>
+                    <button type="submit" class="px-4 py-2 bg-navy-900 text-white rounded-lg font-bold shadow hover:bg-slate-800">Yadda Saxla</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: Procurement Request -->
+    <div id="procurementModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-2xl w-full max-w-lg p-6 shadow-2xl border border-slate-100">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                <h3 class="font-bold text-slate-800 text-base">Yeni Satınalma Sorğusu Yaradın</h3>
+                <button onclick="closeModal('procurementModal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="procurementForm" onsubmit="saveProcurement(event)" class="space-y-4 mt-4 text-xs">
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Ait Olduğu Layihə</label>
+                    <select id="procProject" required class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                        <!-- Dynamic options -->
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Material / Avadanlıq Adı (və ya Anbardan Seçin)</label>
+                    <input type="text" id="procItem" list="inventoryMaterialList" onchange="autoFillMaterialPrice()" placeholder="Məs: Armatur A500C 12mm" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500/20 focus:outline-none">
+                    <datalist id="inventoryMaterialList">
+                        <!-- Dynamic JS filled -->
+                    </datalist>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Vahid Qiyməti (₼)</label>
+                        <input type="number" id="procUnitPrice" required step="0.01" min="0" oninput="calcProcurementTotal()" placeholder="0.00" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500/20 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Miqdar</label>
+                        <input type="number" id="procQuantity" required step="0.01" min="0.01" oninput="calcProcurementTotal()" placeholder="0" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500/20 focus:outline-none">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Ölçü Vahidi</label>
+                        <select id="procUnit" class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                            <option value="Ton">Ton</option>
+                            <option value="m³">m³</option>
+                            <option value="m²">m²</option>
+                            <option value="Ədəd">Ədəd</option>
+                            <option value="Kisə">Kisə</option>
+                            <option value="Növbə/Saat">Növbə/Saat</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Cəmi Məbləğ / Dəyər (₼)</label>
+                        <input type="number" id="procEstimatedCost" required step="0.01" readonly class="w-full px-3 py-2 border border-slate-200 bg-slate-100 font-bold text-amber-700 rounded-lg">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Sorğu Verən Prorab/Mühəndis</label>
+                        <input type="text" id="procRequestedBy" placeholder="Məs: Ramil Həsənov" required class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Seçilən Təchizatçı</label>
+                        <select id="procSupplier" class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                            <!-- Dynamic options -->
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Təcililik Dərəcəsi</label>
+                    <select id="procPriority" class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                        <option value="Normal">Normal</option>
+                        <option value="Təcili">Təcili (Sahə Dayanır)</option>
+                        <option value="Aşağı">Aşağı (Planlaşdırılır)</option>
+                    </select>
+                </div>
+                <div class="pt-3 flex justify-end space-x-2">
+                    <button type="button" onclick="closeModal('procurementModal')" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg font-semibold">Ləğv Et</button>
+                    <button type="submit" class="px-4 py-2 bg-amber-600 text-white rounded-lg font-bold shadow hover:bg-amber-700">Sorğunu Göndər</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: Supplier Creation -->
+    <div id="supplierModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl border border-slate-100">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                <h3 class="font-bold text-slate-800 text-base">Yeni Təchizatçı Əlavə Et</h3>
+                <button onclick="closeModal('supplierModal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="supplierForm" onsubmit="saveSupplier(event)" class="space-y-4 mt-4 text-xs">
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Təchizatçı Şirkət / İstehsalçı</label>
+                    <input type="text" id="supName" placeholder="Məs: Baku Steel Company MMC" required class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Təchizat Kateqoriyası</label>
+                        <select id="supCategory" class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                            <option value="Metal & Armatur">Metal & Armatur</option>
+                            <option value="Beton & Sement">Beton & Sement</option>
+                            <option value="Hörgü & İzolasiya">Hörgü & İzolasiya</option>
+                            <option value="Elektrik & Santexnika">Elektrik & Santexnika</option>
+                            <option value="Texnika İcarəsi">Texnika İcarəsi</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Əlaqəli Şəxs</label>
+                        <input type="text" id="supContactPerson" placeholder="Məs: Əli bəy" required class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Telefon</label>
+                        <input type="text" id="supPhone" placeholder="+994 50 123 45 67" required class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Şəhər / Ünvan</label>
+                        <input type="text" id="supAddress" placeholder="Bakı şəh." required class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                    </div>
+                </div>
+                <div class="pt-3 flex justify-end space-x-2">
+                    <button type="button" onclick="closeModal('supplierModal')" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg font-semibold">Ləğv Et</button>
+                    <button type="submit" class="px-4 py-2 bg-slate-900 text-white rounded-lg font-bold shadow hover:bg-slate-800">Yadda Saxla</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // GLOBAL STATE FOR FN CONSTRUCTION ERP DATABASE
+        let erpData = {
+            projects: [
+                { id: 'PRJ-101', name: 'Park Residence - B Korpusu', client: 'Paşa İnşaat MMC', location: 'Nərimanov r.', budget: 450000, spent: 210000, progress: 55, status: 'İcrada', startDate: '2026-02-01', endDate: '2026-11-30' },
+                { id: 'PRJ-102', name: 'Baku Tower - Şüşə Fasad', client: 'İnter N Holdinq', location: 'Xətai r.', budget: 280000, spent: 260000, progress: 90, status: 'İcrada', startDate: '2026-01-10', endDate: '2026-09-15' },
+                { id: 'PRJ-103', name: 'Hövsan Yaşayış Kompleksi Məktəb', client: 'MİDA', location: 'Hövsan', budget: 620000, spent: 120000, progress: 20, status: 'İcrada', startDate: '2026-05-01', endDate: '2027-03-31' }
+            ],
+            materials: [
+                { sku: 'MAT-201', name: 'Armatur A500C 12mm', category: 'Xammal & Metal', unit: 'Ton', price: 1250, stock: 18 },
+                { sku: 'MAT-202', name: 'Beton M350 Hazır Qarışıq', category: 'Beton & Sement', unit: 'm³', price: 92, stock: 120 },
+                { sku: 'MAT-203', name: 'Kərpic Qırmızı 250x120x65', category: 'Hörgü & İzolasiya', unit: 'Ədəd', price: 0.35, stock: 4500 },
+                { sku: 'MAT-204', name: 'CAT 320 Ekskavator İcarə', category: 'Ağır Texnika', unit: 'Növbə/Saat', price: 450, stock: 5 }
+            ],
+            subcontractors: [
+                { id: 'SUB-301', name: 'AzDəmir Konstruksiya MMC', project: 'Park Residence - B Korpusu', scope: 'Beton Karkas Və Armatur Hörgü', contractAmount: 180000, paidAmount: 120000, form2Status: 'Təsdiqlənib' },
+                { id: 'SUB-302', name: 'Caspian Glass Systems', project: 'Baku Tower - Şüşə Fasad', scope: 'Fasad Şüşələrinin İzo Montajı', contractAmount: 140000, paidAmount: 130000, form2Status: 'Təsdiqlənib' }
+            ],
+            finance: [
+                { date: '2026-08-10', project: 'Park Residence - B Korpusu', desc: 'Sifarişçidən 3-cü Mərhələ Avansı', category: 'Gəlir', type: 'Gəlir', amount: 80000 },
+                { date: '2026-08-12', project: 'Park Residence - B Korpusu', desc: '20 ton Armatur alışı (Baku Steel)', category: 'Material Alışı', type: 'Xərc', amount: 25000 },
+                { date: '2026-08-14', project: 'Hövsan Yaşayış Kompleksi Məktəb', desc: 'Ekskavator İcarə Haqqı', category: 'Texnika İcarəsi', type: 'Xərc', amount: 3600 }
+            ],
+            employees: [
+                { name: 'Ramil Həsənov', role: 'Baş Mühəndis', project: 'Park Residence - B Korpusu', salary: 3800, phone: '+994 50 211 44 55', status: 'Aktiv' },
+                { name: 'Elçin Qasımov', role: 'Prorab (Sahə Rəisi)', project: 'Baku Tower - Şüşə Fasad', salary: 2400, phone: '+994 55 333 66 77', status: 'Aktiv' },
+                { name: 'Tural Məmmədov', role: 'Usta Briqadiri', project: 'Hövsan Yaşayış Kompleksi Məktəb', salary: 1900, phone: '+994 70 888 99 00', status: 'Aktiv' }
+            ],
+            procurement: [
+                { id: 'PRQ-401', date: '2026-08-15', project: 'Park Residence - B Korpusu', item: 'Armatur A500C 14mm', quantity: 25, unit: 'Ton', unitPrice: 1250, estimatedCost: 31250, requestedBy: 'Ramil Həsənov', supplier: 'Baku Steel Company MMC', priority: 'Təcili', status: 'Gözləyir' },
+                { id: 'PRQ-402', date: '2026-08-16', project: 'Hövsan Yaşayış Kompleksi Məktəb', item: 'Beton M350', quantity: 80, unit: 'm³', unitPrice: 92, estimatedCost: 7360, requestedBy: 'Tural Məmmədov', supplier: 'Norm Sement / Beton MMC', priority: 'Normal', status: 'Sifariş Olundu' },
+                { id: 'PRQ-403', date: '2026-08-11', project: 'Baku Tower - Şüşə Fasad', item: 'Fasad Hermetik Silikon', quantity: 200, unit: 'Ədəd', unitPrice: 9, estimatedCost: 1800, requestedBy: 'Elçin Qasımov', supplier: 'Aztəchizat MMC', priority: 'Aşağı', status: 'Anbara Təhvil Verildi' }
+            ],
+            suppliers: [
+                { name: 'Baku Steel Company MMC', category: 'Metal & Armatur', contactPerson: 'Nijat Bəy', phone: '+994 50 222 11 00', address: 'Bakı, Dərnəgül sh.' },
+                { name: 'Norm Sement / Beton MMC', category: 'Beton & Sement', contactPerson: 'Kamran Əliyev', phone: '+994 12 404 00 00', address: 'Qaradağ r.' },
+                { name: 'Aztəchizat MMC', category: 'Hörgü & İzolasiya', contactPerson: 'Məmməd M.', phone: '+994 55 777 88 99', address: 'Bakı, Nərimanov' }
+            ]
+        };
+
+        let activeTab = 'dashboard';
+        let googleWebAppUrl = localStorage.getItem('fn_erp_google_web_app_url') || '';
+        let projectChartInstance = null;
+        let costChartInstance = null;
+
+        // Initialize App
+        window.addEventListener('DOMContentLoaded', () => {
+            loadLocalData();
+            if (googleWebAppUrl) {
+                document.getElementById('googleWebAppUrl').value = googleWebAppUrl;
+                updateSyncBadge(true, 'Google Sheets Birləşib');
+            }
+            renderAllViews();
+            initCharts();
+        });
+
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.remove('hidden');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+
+        function openProjectModal() {
+            document.getElementById('projectForm').reset();
+            openModal('projectModal');
+        }
+
+        function saveProject(e) {
+            e.preventDefault();
+            const name = document.getElementById('projName').value;
+            const client = document.getElementById('projClient').value;
+            const location = document.getElementById('projLocation').value;
+            const budget = Number(document.getElementById('projBudget').value) || 0;
+            const progress = Number(document.getElementById('projProgress').value) || 0;
+            const status = document.getElementById('projStatus').value;
+            const startDate = document.getElementById('projStartDate').value;
+            const endDate = document.getElementById('projEndDate').value;
+
+            const newProject = {
+                id: 'PRJ-' + Math.floor(100 + Math.random() * 900),
+                name,
+                client,
+                location,
+                budget,
+                spent: 0,
+                progress,
+                status,
+                startDate,
+                endDate
+            };
+
+            erpData.projects.push(newProject);
+            renderAllViews();
+            closeModal('projectModal');
+            syncDataWithSheets();
+        }
+
+        function deleteProject(idx) {
+            if (confirm('Bu layihəni silmək istədiyinizə əminsiniz?')) {
+                erpData.projects.splice(idx, 1);
+                renderAllViews();
+                syncDataWithSheets();
+            }
+        }
+
+        function openMaterialModal() {
+            document.getElementById('materialForm').reset();
+            openModal('materialModal');
+        }
+
+        function saveMaterial(e) {
+            e.preventDefault();
+            const newMat = {
+                name: document.getElementById('matName').value,
+                sku: document.getElementById('matSKU').value,
+                category: document.getElementById('matCategory').value,
+                unit: document.getElementById('matUnit').value,
+                price: Number(document.getElementById('matPrice').value) || 0,
+                stock: Number(document.getElementById('matStock').value) || 0
+            };
+            erpData.materials.push(newMat);
+            renderAllViews();
+            closeModal('materialModal');
+            syncDataWithSheets();
+        }
+
+        function deleteMaterial(idx) {
+            if (confirm('Bu materialı silməyə əminsiniz?')) {
+                erpData.materials.splice(idx, 1);
+                renderAllViews();
+                syncDataWithSheets();
+            }
+        }
+
+        function filterMaterialsTable() {
+            const query = document.getElementById('materialSearchInput').value.toLowerCase();
+            const rows = document.querySelectorAll('#materialsTableBody tr');
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(query) ? '' : 'none';
+            });
+        }
+
+        function openSubcontractorModal() {
+            document.getElementById('subcontractorForm').reset();
+            updateProjectSelectDropdowns();
+            openModal('subcontractorModal');
+        }
+
+        function saveSubcontractor(e) {
+            e.preventDefault();
+            const newSub = {
+                id: 'SUB-' + Math.floor(300 + Math.random() * 500),
+                name: document.getElementById('subName').value,
+                project: document.getElementById('subProject').value,
+                scope: document.getElementById('subScope').value,
+                contractAmount: Number(document.getElementById('subContractAmount').value) || 0,
+                paidAmount: Number(document.getElementById('subPaidAmount').value) || 0,
+                form2Status: 'Təsdiqlənib'
+            };
+            erpData.subcontractors.push(newSub);
+            renderAllViews();
+            closeModal('subcontractorModal');
+            syncDataWithSheets();
+        }
+
+        function deleteSubcontractor(idx) {
+            if (confirm('Subpodratçını silməyə əminsiniz?')) {
+                erpData.subcontractors.splice(idx, 1);
+                renderAllViews();
+                syncDataWithSheets();
+            }
+        }
+
+        function openFinanceModal() {
+            document.getElementById('financeForm').reset();
+            updateProjectSelectDropdowns();
+            openModal('financeModal');
+        }
+
+        function saveFinance(e) {
+            e.preventDefault();
+            const newFin = {
+                date: new Date().toISOString().split('T')[0],
+                project: document.getElementById('finProject').value,
+                desc: document.getElementById('finDesc').value,
+                type: document.getElementById('finType').value,
+                category: document.getElementById('finCategory').value,
+                amount: Number(document.getElementById('finAmount').value) || 0
+            };
+            erpData.finance.push(newFin);
+
+            if (newFin.type === 'Xərc') {
+                const proj = erpData.projects.find(p => p.name === newFin.project);
+                if (proj) proj.spent += newFin.amount;
+            }
+
+            renderAllViews();
+            closeModal('financeModal');
+            syncDataWithSheets();
+        }
+
+        function openHrModal() {
+            document.getElementById('hrForm').reset();
+            updateProjectSelectDropdowns();
+            openModal('hrModal');
+        }
+
+        function saveHr(e) {
+            e.preventDefault();
+            const newEmp = {
+                name: document.getElementById('hrName').value,
+                role: document.getElementById('hrRole').value,
+                project: document.getElementById('hrProject').value,
+                salary: Number(document.getElementById('hrSalary').value) || 0,
+                phone: document.getElementById('hrPhone').value,
+                status: 'Aktiv'
+            };
+            erpData.employees.push(newEmp);
+            renderAllViews();
+            closeModal('hrModal');
+            syncDataWithSheets();
+        }
+
+        function deleteHr(idx) {
+            if (confirm('İşçini silmək istədiyinizə əminsiniz?')) {
+                erpData.employees.splice(idx, 1);
+                renderAllViews();
+                syncDataWithSheets();
+            }
+        }
+
+        function updateProjectSelectDropdowns() {
+            const ids = ['subProject', 'finProject', 'procProject', 'hrProject'];
+            ids.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.innerHTML = '';
+                    erpData.projects.forEach(p => {
+                        el.innerHTML += `<option value="${p.name}">${p.name}</option>`;
+                    });
+                }
+            });
+        }
+
+        function switchTab(tabId) {
+            activeTab = tabId;
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-amber-600', 'text-white', 'shadow-md', 'shadow-amber-600/30');
+                btn.classList.add('text-slate-400');
+            });
+
+            const activeBtn = document.getElementById(`nav-${tabId}`);
+            if (activeBtn) {
+                activeBtn.classList.remove('text-slate-400');
+                activeBtn.classList.add('bg-amber-600', 'text-white', 'shadow-md', 'shadow-amber-600/30');
+            }
+
+            const titles = {
+                dashboard: 'FN Construction - İdarəetmə Paneli',
+                projects: 'Tikinti Layihələrinin Portfeli',
+                materials: 'Material və Texnika Anbarı',
+                subcontractors: 'Subpodratçılar və Smeta Aktları',
+                finance: 'Layihələr Üzrə Maliyyə və Kassa',
+                hr: 'Tikinti Heyəti və Briqadalar',
+                procurement: 'Satınalma və Təchizat İdarəetməsi',
+                sheets: 'Google Sheets İnteqrasiya Tənzimləmələri'
+            };
+            document.getElementById('pageTitle').innerText = titles[tabId] || 'FN Construction ERP';
+
+            if (tabId === 'dashboard') {
+                updateCharts();
+            }
+        }
+
+        function renderAllViews() {
+            renderDashboard();
+            renderProjects();
+            renderMaterials();
+            renderSubcontractors();
+            renderFinance();
+            renderHR();
+            renderProcurement();
+            renderSuppliers();
+            saveLocalData();
+        }
+
+        function renderDashboard() {
+            const totalPortfolio = erpData.projects.reduce((sum, p) => sum + (Number(p.budget) || 0), 0);
+            const totalSpent = erpData.projects.reduce((sum, p) => sum + (Number(p.spent) || 0), 0);
+            const activeCount = erpData.projects.filter(p => p.status === 'İcrada').length;
+
+            const totalMaterials = erpData.materials.length;
+            const lowStockCount = erpData.materials.filter(m => m.stock < 10).length;
+            const totalStaff = erpData.employees.length + erpData.subcontractors.length;
+
+            document.getElementById('dashTotalPortfolio').innerText = totalPortfolio.toLocaleString() + ' ₼';
+            document.getElementById('dashActiveCount').innerText = activeCount;
+            document.getElementById('dashTotalSpent').innerText = totalSpent.toLocaleString() + ' ₼';
+            document.getElementById('dashTotalMaterials').innerText = totalMaterials;
+            document.getElementById('dashLowStockCount').innerText = `${lowStockCount} material minimum həddədir`;
+            document.getElementById('dashTotalStaff').innerText = totalStaff;
+
+            const recentTable = document.getElementById('recentProjectsTable');
+            if (recentTable) {
+                recentTable.innerHTML = '';
+                erpData.projects.forEach(p => {
+                    const tr = document.createElement('tr');
+                    tr.className = 'hover:bg-slate-50 transition';
+                    tr.innerHTML = `
+                        <td class="p-3 font-bold text-slate-800">${p.name}</td>
+                        <td class="p-3 text-slate-500">${p.client} / ${p.location}</td>
+                        <td class="p-3 font-bold text-slate-700">${Number(p.budget).toLocaleString()} ₼</td>
+                        <td class="p-3">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-16 bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                                    <div class="bg-amber-500 h-full" style="width: ${p.progress}%"></div>
+                                </div>
+                                <span class="font-bold text-[11px]">${p.progress}%</span>
+                            </div>
+                        </td>
+                        <td class="p-3 text-slate-400 text-[11px]">${p.startDate} - ${p.endDate}</td>
+                        <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700">${p.status}</span></td>
+                    `;
+                    recentTable.appendChild(tr);
+                });
+            }
+        }
+
+        function renderProjects() {
+            const container = document.getElementById('projectsCardsContainer');
+            if (!container) return;
+            container.innerHTML = '';
+
+            erpData.projects.forEach((p, idx) => {
+                let statusClass = 'bg-amber-100 text-amber-700';
+                if (p.status === 'Tamamlandı') statusClass = 'bg-emerald-100 text-emerald-700';
+                else if (p.status === 'Gecikir') statusClass = 'bg-red-100 text-red-700';
+                else if (p.status === 'Planlaşdırılır') statusClass = 'bg-blue-100 text-blue-700';
+
+                const card = document.createElement('div');
+                card.className = 'bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between space-y-4';
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <span class="text-[10px] font-mono font-bold text-amber-600">${p.id}</span>
+                                <h4 class="font-bold text-slate-800 text-sm mt-0.5">${p.name}</h4>
+                            </div>
+                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${statusClass}">${p.status}</span>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-2"><i class="fa-solid fa-user-tie mr-1.5 text-slate-400"></i>${p.client}</p>
+                        <p class="text-xs text-slate-500 mt-1"><i class="fa-solid fa-location-dot mr-1.5 text-slate-400"></i>${p.location}</p>
+                    </div>
+
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-xs">
+                            <span class="text-slate-400 font-medium">İcra olunub:</span>
+                            <span class="font-bold text-slate-700">${p.progress}%</span>
+                        </div>
+                        <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                            <div class="bg-amber-500 h-full rounded-full transition-all duration-500" style="width: ${p.progress}%"></div>
+                        </div>
+                    </div>
+
+                    <div class="pt-3 border-t border-slate-100 grid grid-cols-2 gap-2 text-xs">
+                        <div>
+                            <span class="text-[10px] text-slate-400 uppercase font-bold block">Büdcə</span>
+                            <span class="font-extrabold text-slate-800">${Number(p.budget).toLocaleString()} ₼</span>
+                        </div>
+                        <div>
+                            <span class="text-[10px] text-slate-400 uppercase font-bold block">Faktiki Xərc</span>
+                            <span class="font-extrabold text-red-600">${Number(p.spent).toLocaleString()} ₼</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between pt-2 border-t border-slate-100">
+                        <button onclick="printProjectSmeta('${p.id}')" class="text-xs text-amber-600 hover:text-amber-700 font-bold flex items-center space-x-1">
+                            <i class="fa-solid fa-print"></i>
+                            <span>Smeta Çap Et</span>
+                        </button>
+                        <button onclick="deleteProject(${idx})" class="text-xs text-red-500 hover:text-red-700">
+                            <i class="fa-regular fa-trash-can"></i>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            updateProjectSelectDropdowns();
+        }
+
+        function renderMaterials() {
+            const tbody = document.getElementById('materialsTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            document.getElementById('materialCountBadge').innerText = `${erpData.materials.length} material tapıldı`;
+
+            erpData.materials.forEach((m, idx) => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50 transition';
+                const stockBadge = m.stock < 10 
+                    ? `<span class="px-2 py-0.5 bg-red-100 text-red-700 rounded font-bold text-[10px]">${m.stock} ${m.unit}</span>`
+                    : `<span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded font-bold text-[10px]">${m.stock} ${m.unit}</span>`;
+
+                tr.innerHTML = `
+                    <td class="p-3.5 font-mono text-slate-500">${m.sku}</td>
+                    <td class="p-3.5 font-bold text-slate-800">${m.name}</td>
+                    <td class="p-3.5 text-slate-500">${m.category}</td>
+                    <td class="p-3.5 text-slate-600">${m.unit}</td>
+                    <td class="p-3.5 font-bold text-slate-700">${Number(m.price).toLocaleString()} ₼</td>
+                    <td class="p-3.5">${stockBadge}</td>
+                    <td class="p-3.5 text-right">
+                        <button onclick="deleteMaterial(${idx})" class="text-red-500 hover:text-red-700 text-xs"><i class="fa-regular fa-trash-can"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderSubcontractors() {
+            const tbody = document.getElementById('subcontractorsTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            erpData.subcontractors.forEach((s, idx) => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50 transition';
+                tr.innerHTML = `
+                    <td class="p-3.5 font-bold text-slate-800">${s.name}</td>
+                    <td class="p-3.5 text-slate-600 font-semibold">${s.project}</td>
+                    <td class="p-3.5 text-slate-500">${s.scope}</td>
+                    <td class="p-3.5 font-extrabold text-slate-800">${Number(s.contractAmount).toLocaleString()} ₼</td>
+                    <td class="p-3.5 font-bold text-emerald-600">${Number(s.paidAmount).toLocaleString()} ₼</td>
+                    <td class="p-3.5"><span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded text-[10px] font-bold">${s.form2Status}</span></td>
+                    <td class="p-3.5 text-right">
+                        <button onclick="deleteSubcontractor(${idx})" class="text-red-500 hover:text-red-700 text-xs"><i class="fa-regular fa-trash-can"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderFinance() {
+            const tbody = document.getElementById('financeTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            erpData.finance.forEach((f, idx) => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50 transition';
+                const typeBadge = f.type === 'Gəlir' 
+                    ? '<span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 font-bold rounded text-[10px]">Gəlir</span>'
+                    : '<span class="px-2 py-0.5 bg-red-100 text-red-700 font-bold rounded text-[10px]">Xərc</span>';
+
+                tr.innerHTML = `
+                    <td class="p-3.5 text-slate-500 font-mono text-xs">${f.date}</td>
+                    <td class="p-3.5 font-bold text-slate-800">${f.project}</td>
+                    <td class="p-3.5 text-slate-600">${f.desc}</td>
+                    <td class="p-3.5 text-slate-500">${f.category}</td>
+                    <td class="p-3.5">${typeBadge}</td>
+                    <td class="p-3.5 font-extrabold ${f.type === 'Gəlir' ? 'text-emerald-600' : 'text-slate-800'}">${Number(f.amount).toLocaleString()} ₼</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderHR() {
+            const container = document.getElementById('hrCardsContainer');
+            if (!container) return;
+            container.innerHTML = '';
+
+            erpData.employees.forEach((emp, idx) => {
+                const card = document.createElement('div');
+                card.className = 'p-5 bg-white rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between space-y-3';
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-center justify-between">
+                            <h4 class="font-bold text-slate-800 text-sm">${emp.name}</h4>
+                            <span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded text-[10px] font-bold">${emp.status}</span>
+                        </div>
+                        <p class="text-xs text-amber-600 font-semibold mt-1"><i class="fa-solid fa-user-gear mr-1"></i>${emp.role}</p>
+                        <p class="text-xs text-slate-500 mt-2"><i class="fa-solid fa-building mr-1.5 text-slate-400"></i><b>Layihə:</b> ${emp.project}</p>
+                        <p class="text-xs text-slate-500 mt-1"><i class="fa-solid fa-phone mr-1.5 text-slate-400"></i><b>Tel:</b> ${emp.phone}</p>
+                    </div>
+                    <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
+                        <div>
+                            <span class="text-[10px] text-slate-400 font-bold block uppercase">Maaş</span>
+                            <span class="font-extrabold text-slate-800 text-xs">${Number(emp.salary).toLocaleString()} ₼ / ay</span>
+                        </div>
+                        <button onclick="deleteHr(${idx})" class="text-xs text-red-500 hover:text-red-700">
+                            <i class="fa-regular fa-trash-can"></i>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function renderProcurement() {
+            const tbody = document.getElementById('procurementTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            const pending = erpData.procurement.filter(p => p.status === 'Gözləyir').length;
+            const ordered = erpData.procurement.filter(p => p.status === 'Sifariş Olundu').length;
+            const delivered = erpData.procurement.filter(p => p.status === 'Anbara Təhvil Verildi').length;
+
+            document.getElementById('procPendingCount').innerText = pending;
+            document.getElementById('procOrderedCount').innerText = ordered;
+            document.getElementById('procDeliveredCount').innerText = delivered;
+            document.getElementById('procurementCountBadge').innerText = `${erpData.procurement.length} sorğu mövcuddur`;
+
+            erpData.procurement.forEach((p, idx) => {
+                const tr = document.createElement('tr');
+                
+                let priorityBadge = '<span class="px-2 py-0.5 bg-slate-100 text-slate-600 rounded font-bold text-[10px]">Normal</span>';
+                if (p.priority === 'Təcili') {
+                    priorityBadge = '<span class="px-2 py-0.5 bg-red-100 text-red-700 rounded font-bold text-[10px] animate-pulse">Təcili</span>';
+                } else if (p.priority === 'Aşağı') {
+                    priorityBadge = '<span class="px-2 py-0.5 bg-slate-100 text-slate-400 rounded text-[10px]">Aşağı</span>';
+                }
+
+                let statusBadge = '<span class="px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full font-bold text-[10px]">Gözləyir</span>';
+                if (p.status === 'Sifariş Olundu') {
+                    statusBadge = '<span class="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full font-bold text-[10px]">Sifariş Olundu</span>';
+                } else if (p.status === 'Anbara Təhvil Verildi') {
+                    statusBadge = '<span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full font-bold text-[10px]">Təhvil Verildi</span>';
+                }
+
+                const unitPriceVal = p.unitPrice ? Number(p.unitPrice).toLocaleString() + ' ₼' : '-';
+
+                tr.innerHTML = `
+                    <td class="p-3.5"><span class="font-mono text-xs font-bold text-slate-700">${p.id}</span><br><span class="text-[10px] text-slate-400">${p.date}</span></td>
+                    <td class="p-3.5 font-bold text-slate-800">${p.project}</td>
+                    <td class="p-3.5 font-semibold text-amber-700">${p.item}</td>
+                    <td class="p-3.5 font-bold text-slate-800">${p.quantity} ${p.unit}</td>
+                    <td class="p-3.5 font-semibold text-slate-700">${unitPriceVal}</td>
+                    <td class="p-3.5 text-slate-600">${p.requestedBy}</td>
+                    <td class="p-3.5 text-slate-500">${p.supplier}</td>
+                    <td class="p-3.5 font-extrabold text-slate-800">${Number(p.estimatedCost).toLocaleString()} ₼</td>
+                    <td class="p-3.5">${priorityBadge}</td>
+                    <td class="p-3.5">${statusBadge}</td>
+                    <td class="p-3.5 text-right space-x-1">
+                        ${p.status === 'Gözləyir' ? `<button onclick="updateProcurementStatus(${idx}, 'Sifariş Olundu')" class="px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-[10px] rounded border border-blue-200">Sifariş Et</button>` : ''}
+                        ${p.status === 'Sifariş Olundu' ? `<button onclick="updateProcurementStatus(${idx}, 'Anbara Təhvil Verildi')" class="px-2 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-[10px] rounded border border-emerald-200">Anbara Al</button>` : ''}
+                        <button onclick="deleteProcurement(${idx})" class="text-red-500 hover:text-red-700 p-1"><i class="fa-regular fa-trash-can"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderSuppliers() {
+            const container = document.getElementById('suppliersContainer');
+            if (!container) return;
+            container.innerHTML = '';
+            document.getElementById('supplierCountBadge').innerText = `${erpData.suppliers.length} təchizatçı`;
+
+            erpData.suppliers.forEach((s) => {
+                const card = document.createElement('div');
+                card.className = "p-4 rounded-xl border border-slate-200/80 bg-slate-50/50 flex flex-col justify-between space-y-3";
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-start justify-between">
+                            <h5 class="font-bold text-slate-800 text-xs">${s.name}</h5>
+                            <span class="px-2 py-0.5 bg-amber-100 text-amber-700 rounded text-[10px] font-bold">${s.category}</span>
+                        </div>
+                        <p class="text-[11px] text-slate-500 mt-2"><i class="fa-solid fa-user-check text-slate-400 mr-1.5"></i><b>Əlaqə:</b> ${s.contactPerson}</p>
+                        <p class="text-[11px] text-slate-500 mt-1"><i class="fa-solid fa-phone text-slate-400 mr-1.5"></i><b>Tel:</b> ${s.phone}</p>
+                    </div>
+                    <div class="pt-2 border-t border-slate-200/60 flex justify-between items-center text-[10px] text-slate-400">
+                        <span><i class="fa-solid fa-location-dot mr-1"></i>${s.address}</span>
+                        <span class="text-emerald-600 font-bold"><i class="fa-solid fa-circle-check mr-1"></i>Aktiv Tərəfdaş</span>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            updateSupplierSelectDropdown();
+        }
+
+        function updateSupplierSelectDropdown() {
+            const el = document.getElementById('procSupplier');
+            if (el) {
+                el.innerHTML = '';
+                erpData.suppliers.forEach(s => {
+                    el.innerHTML += `<option value="${s.name}">${s.name} (${s.category})</option>`;
+                });
+            }
+        }
+
+        function openProcurementModal() {
+            document.getElementById('procurementForm').reset();
+            updateProjectSelectDropdowns();
+            updateSupplierSelectDropdown();
+            populateInventoryDatalist();
+            document.getElementById('procEstimatedCost').value = '0';
+            openModal('procurementModal');
+        }
+
+        function populateInventoryDatalist() {
+            const list = document.getElementById('inventoryMaterialList');
+            if (!list) return;
+            list.innerHTML = '';
+            erpData.materials.forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m.name;
+                opt.innerText = `Anbar qiyməti: ${m.price} ₼ / ${m.unit}`;
+                list.appendChild(opt);
+            });
+        }
+
+        function autoFillMaterialPrice() {
+            const itemName = document.getElementById('procItem').value;
+            const mat = erpData.materials.find(m => m.name.toLowerCase() === itemName.toLowerCase());
+            if (mat) {
+                document.getElementById('procUnitPrice').value = mat.price;
+                document.getElementById('procUnit').value = mat.unit;
+                calcProcurementTotal();
+            }
+        }
+
+        function calcProcurementTotal() {
+            const unitPrice = Number(document.getElementById('procUnitPrice').value) || 0;
+            const quantity = Number(document.getElementById('procQuantity').value) || 0;
+            const total = (unitPrice * quantity).toFixed(2);
+            document.getElementById('procEstimatedCost').value = total;
+        }
+
+        function openSupplierModal() {
+            document.getElementById('supplierForm').reset();
+            openModal('supplierModal');
+        }
+
+        function saveProcurement(e) {
+            e.preventDefault();
+            const unitPrice = Number(document.getElementById('procUnitPrice').value) || 0;
+            const quantity = Number(document.getElementById('procQuantity').value) || 0;
+            const estimatedCost = Number((unitPrice * quantity).toFixed(2));
+
+            const newProc = {
+                id: 'PRQ-' + Math.floor(400 + Math.random() * 500),
+                date: new Date().toISOString().split('T')[0],
+                project: document.getElementById('procProject').value,
+                item: document.getElementById('procItem').value,
+                quantity: quantity,
+                unit: document.getElementById('procUnit').value,
+                unitPrice: unitPrice,
+                estimatedCost: estimatedCost,
+                requestedBy: document.getElementById('procRequestedBy').value,
+                supplier: document.getElementById('procSupplier').value,
+                priority: document.getElementById('procPriority').value,
+                status: 'Gözləyir'
+            };
+
+            erpData.procurement.push(newProc);
+            renderAllViews();
+            closeModal('procurementModal');
+            syncDataWithSheets();
+        }
+
+        function saveSupplier(e) {
+            e.preventDefault();
+            const newSup = {
+                name: document.getElementById('supName').value,
+                category: document.getElementById('supCategory').value,
+                contactPerson: document.getElementById('supContactPerson').value,
+                phone: document.getElementById('supPhone').value,
+                address: document.getElementById('supAddress').value
+            };
+
+            erpData.suppliers.push(newSup);
+            renderAllViews();
+            closeModal('supplierModal');
+            syncDataWithSheets();
+        }
+
+        function updateProcurementStatus(idx, newStatus) {
+            const item = erpData.procurement[idx];
+            if (!item) return;
+
+            item.status = newStatus;
+
+            if (newStatus === 'Anbara Təhvil Verildi') {
+                erpData.finance.push({
+                    date: new Date().toISOString().split('T')[0],
+                    project: item.project,
+                    desc: `Satınalma: ${item.item} (${item.quantity} ${item.unit})`,
+                    category: 'Material Alışı',
+                    type: 'Xərc',
+                    amount: item.estimatedCost
+                });
+
+                const proj = erpData.projects.find(p => p.name === item.project);
+                if (proj) proj.spent += item.estimatedCost;
+
+                const mat = erpData.materials.find(m => m.name.toLowerCase().includes(item.item.toLowerCase()));
+                if (mat) mat.stock += item.quantity;
+            }
+
+            renderAllViews();
+            syncDataWithSheets();
+        }
+
+        function deleteProcurement(idx) {
+            if (confirm('Satınalma sorğusunu silməyə əminsiniz?')) {
+                erpData.procurement.splice(idx, 1);
+                renderAllViews();
+                syncDataWithSheets();
+            }
+        }
+
+        function saveLocalData() {
+            localStorage.setItem('fn_erp_data_v2', JSON.stringify(erpData));
+        }
+
+        function loadLocalData() {
+            const saved = localStorage.getItem('fn_erp_data_v2');
+            if (saved) {
+                try {
+                    erpData = JSON.parse(saved);
+                } catch(e) {
+                    console.error("Local data parse error", e);
+                }
+            }
+        }
+
+        function saveAndTestConnection() {
+            const url = document.getElementById('googleWebAppUrl').value.trim();
+            if (!url) {
+                alert('Lütfən keçərli Web App URL daxil edin!');
+                return;
+            }
+            googleWebAppUrl = url;
+            localStorage.setItem('fn_erp_google_web_app_url', googleWebAppUrl);
+            
+            const feedback = document.getElementById('connectionFeedback');
+            feedback.className = "text-xs p-3 rounded-lg bg-blue-50 text-blue-700 block";
+            feedback.innerText = "Qoşulur və məlumatlar Google Sheets-ə göndərilir...";
+
+            syncDataWithSheets((success) => {
+                if (success) {
+                    feedback.className = "text-xs p-3 rounded-lg bg-emerald-50 text-emerald-700 block";
+                    feedback.innerText = "Uğurla qoşuldu! Bütün verilənlər Google Sheets ilə sinxronlaşdırıldı.";
+                } else {
+                    feedback.className = "text-xs p-3 rounded-lg bg-red-50 text-red-700 block";
+                    feedback.innerText = "Sinxronizasiya xətası! URL-in doğru olduğundan və 'Anyone' giriş icazəsinin seçildiyindən əmin olun.";
+                }
+            });
+        }
+
+        function initCharts() {
+            const ctx1 = document.getElementById('projectBudgetChart');
+            if (ctx1) {
+                projectChartInstance = new Chart(ctx1, {
+                    type: 'bar',
+                    data: {
+                        labels: erpData.projects.map(p => p.name),
+                        datasets: [
+                            {
+                                label: 'Ümumi Büdcə (₼)',
+                                data: erpData.projects.map(p => p.budget),
+                                backgroundColor: '#f59e0b',
+                                borderRadius: 6
+                            },
+                            {
+                                label: 'Faktiki Xərc (₼)',
+                                data: erpData.projects.map(p => p.spent),
+                                backgroundColor: '#ef4444',
+                                borderRadius: 6
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'top', labels: { font: { family: 'Inter', size: 11 } } } }
+                    }
+                });
+            }
+
+            const ctx2 = document.getElementById('costBreakdownChart');
+            if (ctx2) {
+                costChartInstance = new Chart(ctx2, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Material Alışı', 'İşçilik & Maaş', 'Texnika İcarəsi', 'Subpodratçı', 'İnzibati / Digər'],
+                        datasets: [{
+                            data: [45, 25, 15, 10, 5],
+                            backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#8b5cf6', '#64748b']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom', labels: { font: { family: 'Inter', size: 10 } } } }
+                    }
+                });
+            }
+        }
+
+        function updateCharts() {
+            if (projectChartInstance) {
+                projectChartInstance.data.labels = erpData.projects.map(p => p.name);
+                projectChartInstance.data.datasets[0].data = erpData.projects.map(p => p.budget);
+                projectChartInstance.data.datasets[1].data = erpData.projects.map(p => p.spent);
+                projectChartInstance.update();
+            }
+        }
+
+        function syncDataWithSheets(callback) {
+            const icon = document.getElementById('syncSpinIcon');
+            if (icon) icon.classList.add('fa-spin');
+
+            if (!googleWebAppUrl) {
+                setTimeout(() => {
+                    if (icon) icon.classList.remove('fa-spin');
+                    updateSyncBadge(false, 'Lokal Rejim');
+                    document.getElementById('lastSyncTime').innerText = 'Lokal Yaddaş: ' + new Date().toLocaleTimeString();
+                    if (callback) callback(true);
+                }, 400);
+                return;
+            }
+
+            const payload = {
+                Projects: [
+                    ['ID', 'Layihə Adı', 'Sifarişçi', 'Ünvan', 'Büdcə', 'Faktiki Xərc', 'İcra %', 'Status', 'Başlama', 'Bitmə'],
+                    ...erpData.projects.map(p => [p.id, p.name, p.client, p.location, p.budget, p.spent, p.progress, p.status, p.startDate, p.endDate])
+                ],
+                Materials: [
+                    ['SKU', 'Material Adı', 'Kateqoriya', 'Vahid', 'Qiymət', 'Stok'],
+                    ...erpData.materials.map(m => [m.sku, m.name, m.category, m.unit, m.price, m.stock])
+                ],
+                Subcontractors: [
+                    ['ID', 'Subpodratçı', 'Layihə', 'İşin Sahəsi', 'Müqavilə', 'Ödənilən', 'Form-2'],
+                    ...erpData.subcontractors.map(s => [s.id, s.name, s.project, s.scope, s.contractAmount, s.paidAmount, s.form2Status])
+                ],
+                Finance: [
+                    ['Tarix', 'Layihə', 'Təsvir', 'Kateqoriya', 'Növ', 'Məbləğ'],
+                    ...erpData.finance.map(f => [f.date, f.project, f.desc, f.category, f.type, f.amount])
+                ],
+                Procurement: [
+                    ['ID', 'Tarix', 'Layihə', 'Material/Avadanlıq', 'Miqdar', 'Vahid', 'Vahid Qiyməti', 'Dəyər', 'Sorğu Verən', 'Təchizatçı', 'Təcililik', 'Status'],
+                    ...erpData.procurement.map(pr => [pr.id, pr.date, pr.project, pr.item, pr.quantity, pr.unit, pr.unitPrice || 0, pr.estimatedCost, pr.requestedBy, pr.supplier, pr.priority, pr.status])
+                ],
+                Suppliers: [
+                    ['Şirkət Adı', 'Kateqoriya', 'Əlaqəli Şəxs', 'Telefon', 'Ünvan'],
+                    ...erpData.suppliers.map(sp => [sp.name, sp.category, sp.contactPerson, sp.phone, sp.address])
+                ]
+            };
+
+            fetch(googleWebAppUrl, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(() => {
+                if (icon) icon.classList.remove('fa-spin');
+                updateSyncBadge(true, 'Google Sheets Birləşib');
+                document.getElementById('lastSyncTime').innerText = 'Google Sync: ' + new Date().toLocaleTimeString();
+                if (callback) callback(true);
+            })
+            .catch(err => {
+                console.error("Sync error", err);
+                if (icon) icon.classList.remove('fa-spin');
+                updateSyncBadge(false, 'Xəta Yarandı');
+                if (callback) callback(false);
+            });
+        }
+
+        function updateSyncBadge(isConnected, label) {
+            const badge = document.getElementById('syncStatusBadge');
+            if (!badge) return;
+            if (isConnected) {
+                badge.className = "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+                badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse"></span> ${label}`;
+            } else {
+                badge.className = "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20";
+                badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-400 mr-1.5"></span> ${label}`;
+            }
+        }
+
+        function copyAppsScriptCode() {
+            const textarea = document.getElementById('appsScriptCode');
+            textarea.select();
+            document.execCommand('copy');
+            alert('Apps Script kodu kopyalandı! Google Sheets-də Extensions -> Apps Script bölməsinə yapışdırın.');
+        }
+
+        function resetToLocalData() {
+            localStorage.removeItem('fn_erp_google_web_app_url');
+            googleWebAppUrl = '';
+            document.getElementById('googleWebAppUrl').value = '';
+            updateSyncBadge(false, 'Lokal Rejim');
+            alert('Lokal rejimə keçirildi.');
+        }
+
+        function exportToExcel(type) {
+            const wb = XLSX.utils.book_new();
+            if (type === 'projects') {
+                const ws = XLSX.utils.json_to_sheet(erpData.projects);
+                XLSX.utils.book_append_sheet(wb, ws, "Layihələr");
+                XLSX.writeFile(wb, "FN_Construction_Layiheler.xlsx");
+            } else if (type === 'materials') {
+                const ws = XLSX.utils.json_to_sheet(erpData.materials);
+                XLSX.utils.book_append_sheet(wb, ws, "Materiallar");
+                XLSX.writeFile(wb, "FN_Construction_Materiallar.xlsx");
+            }
+        }
+
+        function printProjectSmeta(projId) {
+            const proj = erpData.projects.find(p => p.id === projId);
+            if (!proj) return;
+
+            const win = window.open('', '', 'width=800,height=900');
+            win.document.write(`
+                <html>
+                <head>
+                    <title>Smeta - ${proj.name}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 30px; color: #1e293b; }
+                        .header { border-bottom: 3px solid #f59e0b; padding-bottom: 15px; display: flex; justify-content: space-between; }
+                        .brand { font-size: 24px; font-weight: bold; color: #1e293b; }
+                        .brand span { color: #f59e0b; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                        th, td { border: 1px solid #cbd5e1; padding: 10px; text-align: left; font-size: 12px; }
+                        th { background: #f8fafc; }
+                        .total-box { margin-top: 20px; text-align: right; font-size: 16px; font-weight: bold; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <div>
+                            <div class="brand">FN <span>CONSTRUCTION</span></div>
+                            <p style="font-size: 12px; color: #64748b;">Tikinti Layihəsi Smeta və Maliyyə Arayışı</p>
+                        </div>
+                        <div style="text-align: right; font-size: 12px;">
+                            <p><b>Tarix:</b> ${new Date().toLocaleDateString()}</p>
+                            <p><b>Layihə Kod:</b> ${proj.id}</p>
+                        </div>
+                    </div>
+                    <div style="margin-top: 20px; font-size: 13px;">
+                        <p><b>Layihə Adı:</b> ${proj.name}</p>
+                        <p><b>Sifarişçi:</b> ${proj.client}</p>
+                        <p><b>Məkan:</b> ${proj.location}</p>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Göstərici</th>
+                                <th>Məbləğ / Dəyər</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Ümumi Smeta Büdcəsi</td><td><b>${Number(proj.budget).toLocaleString()} ₼</b></td></tr>
+                            <tr><td>İcra Olunmuş İşlər (Faktiki Xərc)</td><td>${Number(proj.spent).toLocaleString()} ₼</td></tr>
+                            <tr><td>Cari İcra Faizi</td><td><b>${proj.progress}%</b></td></tr>
+                            <tr><td>Planlaşdırılan Müddət</td><td>${proj.startDate} — ${proj.endDate}</td></tr>
+                        </tbody>
+                    </table>
+                    <div class="total-box">
+                        Smeta Balansı: ${Number(proj.budget - proj.spent).toLocaleString()} ₼
+                    </div>
+                </body>
+                </html>
+            `);
+            win.document.close();
+            win.print();
+        }
+    </script>
+</body>
+</html>
