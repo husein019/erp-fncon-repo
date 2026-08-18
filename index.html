@@ -95,6 +95,11 @@
                     <span>Tikinti Layihələri</span>
                 </button>
 
+                <button onclick="switchTab('boq')" id="nav-boq" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold transition-all text-slate-400 hover:text-white hover:bg-slate-800">
+                    <i class="fa-solid fa-list-check w-5 text-center text-sm"></i>
+                    <span>Smeta / BOQ Nəzarəti</span>
+                </button>
+
                 <button onclick="switchTab('materials')" id="nav-materials" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold transition-all text-slate-400 hover:text-white hover:bg-slate-800">
                     <i class="fa-solid fa-cubes-stacked w-5 text-center text-sm"></i>
                     <span>Material & Texnika Anbarı</span>
@@ -323,6 +328,34 @@
                 </div>
             </div>
 
+            <!-- TAB: SMETA / BOQ -->
+            <div id="tab-boq" class="tab-content hidden space-y-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <h3 class="text-base font-bold text-slate-800">Tam Detallı Smeta / BOQ</h3>
+                        <p class="text-xs text-slate-500">Plan miqdarı, vahid qiyməti, faktiki xərc və büdcə fərqi</p>
+                    </div>
+                    <button onclick="openBoqModal()" class="px-4 py-2 text-xs bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg shadow-md transition flex items-center space-x-1.5">
+                        <i class="fa-solid fa-plus"></i><span>Yeni BOQ sətri</span>
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="bg-white p-4 rounded-xl border border-slate-200"><span class="text-[10px] uppercase font-bold text-slate-400">Planlaşdırılmış smeta</span><div id="boqPlannedTotal" class="text-xl font-black text-slate-800 mt-1">0 ₼</div></div>
+                    <div class="bg-white p-4 rounded-xl border border-slate-200"><span class="text-[10px] uppercase font-bold text-slate-400">Təsdiqli faktiki xərc</span><div id="boqActualTotal" class="text-xl font-black text-red-600 mt-1">0 ₼</div></div>
+                    <div class="bg-white p-4 rounded-xl border border-slate-200"><span class="text-[10px] uppercase font-bold text-slate-400">Qalıq büdcə</span><div id="boqRemainingTotal" class="text-xl font-black text-emerald-600 mt-1">0 ₼</div></div>
+                </div>
+                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs text-slate-600">
+                            <thead class="bg-slate-100/70 text-[10px] font-bold text-slate-500 uppercase border-b border-slate-200">
+                                <tr><th class="p-3">Kod</th><th class="p-3">Layihə</th><th class="p-3">Kateqoriya / İş</th><th class="p-3">Vahid</th><th class="p-3">Plan miqdar</th><th class="p-3">Vahid qiyməti</th><th class="p-3">Plan cəmi</th><th class="p-3">Faktiki</th><th class="p-3">Fərq</th><th class="p-3"></th></tr>
+                            </thead>
+                            <tbody id="boqTableBody" class="divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
             <!-- TAB 3: MATERIAL VƏ TEXNİKA ANBARI -->
             <div id="tab-materials" class="tab-content hidden space-y-6">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -427,6 +460,9 @@
                                     <th class="p-3.5">Xərc Növü</th>
                                     <th class="p-3.5">Əməliyyat Növü</th>
                                     <th class="p-3.5">Məbləğ (₼)</th>
+                                    <th class="p-3.5">Daxil edən</th>
+                                    <th class="p-3.5">Təsdiq</th>
+                                    <th class="p-3.5 text-right">Əməliyyat</th>
                                 </tr>
                             </thead>
                             <tbody id="financeTableBody" class="divide-y divide-slate-100">
@@ -716,6 +752,31 @@ function doPost(e) {
         </div>
     </div>
 
+    <!-- MODAL: BOQ Line -->
+    <div id="boqModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-2xl w-full max-w-2xl p-6 shadow-2xl border border-slate-100">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                <h3 class="font-bold text-slate-800 text-base">Yeni Smeta / BOQ Sətri</h3>
+                <button onclick="closeModal('boqModal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="boqForm" onsubmit="saveBoq(event)" class="space-y-4 mt-4 text-xs">
+                <div class="grid grid-cols-3 gap-3">
+                    <div><label class="block font-semibold text-slate-700 mb-1">Layihə</label><select id="boqProject" required class="w-full px-3 py-2 border border-slate-300 rounded-lg"></select></div>
+                    <div><label class="block font-semibold text-slate-700 mb-1">BOQ / Xərc Kodu</label><input id="boqCode" required placeholder="Məs: EL-01.001" class="w-full px-3 py-2 border border-slate-300 rounded-lg"></div>
+                    <div><label class="block font-semibold text-slate-700 mb-1">Kateqoriya</label><select id="boqCategory" class="w-full px-3 py-2 border border-slate-300 rounded-lg"><option>Material</option><option>İşçilik</option><option>Texnika</option><option>Subpodratçı</option><option>Logistika</option><option>Digər</option></select></div>
+                </div>
+                <div><label class="block font-semibold text-slate-700 mb-1">İşin / materialın tam təsviri</label><input id="boqDescription" required placeholder="Məs: 0.4 kV kabel xəttinin çəkilməsi" class="w-full px-3 py-2 border border-slate-300 rounded-lg"></div>
+                <div class="grid grid-cols-4 gap-3">
+                    <div><label class="block font-semibold text-slate-700 mb-1">Vahid</label><select id="boqUnit" class="w-full px-3 py-2 border border-slate-300 rounded-lg"><option>Ədəd</option><option>metr</option><option>m²</option><option>m³</option><option>kg</option><option>ton</option><option>saat</option><option>dəst</option><option>iş</option></select></div>
+                    <div><label class="block font-semibold text-slate-700 mb-1">Plan miqdarı</label><input type="number" step="0.001" min="0" id="boqQuantity" required oninput="calcBoqTotal()" class="w-full px-3 py-2 border border-slate-300 rounded-lg"></div>
+                    <div><label class="block font-semibold text-slate-700 mb-1">Vahid qiyməti (₼)</label><input type="number" step="0.01" min="0" id="boqUnitPrice" required oninput="calcBoqTotal()" class="w-full px-3 py-2 border border-slate-300 rounded-lg"></div>
+                    <div><label class="block font-semibold text-slate-700 mb-1">Plan cəmi (₼)</label><input id="boqTotalPreview" readonly value="0.00" class="w-full px-3 py-2 bg-slate-100 border border-slate-300 rounded-lg font-bold"></div>
+                </div>
+                <div class="pt-3 flex justify-end space-x-2"><button type="button" onclick="closeModal('boqModal')" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg font-semibold">Ləğv et</button><button type="submit" class="px-4 py-2 bg-amber-600 text-white rounded-lg font-bold">BOQ-a əlavə et</button></div>
+            </form>
+        </div>
+    </div>
+
     <!-- MODAL: Material Creation -->
     <div id="materialModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden">
         <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl border border-slate-100">
@@ -823,13 +884,17 @@ function doPost(e) {
             <form id="financeForm" onsubmit="saveFinance(event)" class="space-y-4 mt-4 text-xs">
                 <div>
                     <label class="block font-semibold text-slate-700 mb-1">Əlaqəli Layihə</label>
-                    <select id="finProject" required class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                    <select id="finProject" required onchange="updateFinanceBoqOptions()" class="w-full px-3 py-2 border border-slate-300 rounded-lg">
                         <!-- Dynamic projects -->
                     </select>
                 </div>
                 <div>
                     <label class="block font-semibold text-slate-700 mb-1">Təsvir / Şərh</label>
                     <input type="text" id="finDesc" placeholder="Məs: 15 ton beton alış ödənişi" required class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div><label class="block font-semibold text-slate-700 mb-1">BOQ / Xərc Kodu</label><select id="finBoqCode" class="w-full px-3 py-2 border border-slate-300 rounded-lg"><option value="">BOQ-dan kənar xərc</option></select></div>
+                    <div><label class="block font-semibold text-slate-700 mb-1">Daxil edən şəxs</label><input id="finSubmittedBy" required placeholder="Məs: Layihə rəhbəri" class="w-full px-3 py-2 border border-slate-300 rounded-lg"></div>
                 </div>
                 <div class="grid grid-cols-3 gap-3">
                     <div>
@@ -1034,6 +1099,10 @@ function doPost(e) {
                 { id: 'PRJ-102', name: 'Baku Tower - Şüşə Fasad', client: 'İnter N Holdinq', location: 'Xətai r.', budget: 280000, spent: 260000, progress: 90, status: 'İcrada', startDate: '2026-01-10', endDate: '2026-09-15' },
                 { id: 'PRJ-103', name: 'Hövsan Yaşayış Kompleksi Məktəb', client: 'MİDA', location: 'Hövsan', budget: 620000, spent: 120000, progress: 20, status: 'İcrada', startDate: '2026-05-01', endDate: '2027-03-31' }
             ],
+            boq: [
+                { id: 'BOQ-001', project: 'Park Residence - B Korpusu', code: 'CON-01.001', category: 'Material', description: 'Armatur A500C 12mm', unit: 'ton', plannedQty: 100, unitPrice: 1250 },
+                { id: 'BOQ-002', project: 'Park Residence - B Korpusu', code: 'LAB-01.001', category: 'İşçilik', description: 'Beton karkas montaj işləri', unit: 'iş', plannedQty: 1, unitPrice: 180000 }
+            ],
             materials: [
                 { sku: 'MAT-201', name: 'Armatur A500C 12mm', category: 'Xammal & Metal', unit: 'Ton', price: 1250, stock: 18 },
                 { sku: 'MAT-202', name: 'Beton M350 Hazır Qarışıq', category: 'Beton & Sement', unit: 'm³', price: 92, stock: 120 },
@@ -1045,9 +1114,9 @@ function doPost(e) {
                 { id: 'SUB-302', name: 'Caspian Glass Systems', project: 'Baku Tower - Şüşə Fasad', scope: 'Fasad Şüşələrinin İzo Montajı', contractAmount: 140000, paidAmount: 130000, form2Status: 'Təsdiqlənib' }
             ],
             finance: [
-                { date: '2026-08-10', project: 'Park Residence - B Korpusu', desc: 'Sifarişçidən 3-cü Mərhələ Avansı', category: 'Gəlir', type: 'Gəlir', amount: 80000 },
-                { date: '2026-08-12', project: 'Park Residence - B Korpusu', desc: '20 ton Armatur alışı (Baku Steel)', category: 'Material Alışı', type: 'Xərc', amount: 25000 },
-                { date: '2026-08-14', project: 'Hövsan Yaşayış Kompleksi Məktəb', desc: 'Ekskavator İcarə Haqqı', category: 'Texnika İcarəsi', type: 'Xərc', amount: 3600 }
+                { date: '2026-08-10', project: 'Park Residence - B Korpusu', desc: 'Sifarişçidən 3-cü Mərhələ Avansı', category: 'Gəlir', type: 'Gəlir', amount: 80000, boqCode: '', submittedBy: 'Mühasib', approvalStatus: 'Təsdiqləndi', approvedBy: 'Direktor' },
+                { date: '2026-08-12', project: 'Park Residence - B Korpusu', desc: '20 ton Armatur alışı (Baku Steel)', category: 'Material Alışı', type: 'Xərc', amount: 25000, boqCode: 'CON-01.001', submittedBy: 'Layihə rəhbəri', approvalStatus: 'Təsdiqləndi', approvedBy: 'Mühasib' },
+                { date: '2026-08-14', project: 'Hövsan Yaşayış Kompleksi Məktəb', desc: 'Ekskavator İcarə Haqqı', category: 'Texnika İcarəsi', type: 'Xərc', amount: 3600, boqCode: '', submittedBy: 'Layihə rəhbəri', approvalStatus: 'Təsdiqləndi', approvedBy: 'Mühasib' }
             ],
             employees: [
                 { name: 'Ramil Həsənov', role: 'Baş Mühəndis', project: 'Park Residence - B Korpusu', salary: 3800, phone: '+994 50 211 44 55', status: 'Aktiv' },
@@ -1204,9 +1273,54 @@ function doPost(e) {
             }
         }
 
+        function openBoqModal() {
+            document.getElementById('boqForm').reset();
+            updateProjectSelectDropdowns();
+            calcBoqTotal();
+            openModal('boqModal');
+        }
+
+        function calcBoqTotal() {
+            const qty = Number(document.getElementById('boqQuantity')?.value) || 0;
+            const price = Number(document.getElementById('boqUnitPrice')?.value) || 0;
+            const output = document.getElementById('boqTotalPreview');
+            if (output) output.value = (qty * price).toFixed(2);
+        }
+
+        function saveBoq(e) {
+            e.preventDefault();
+            const line = {
+                id: 'BOQ-' + String(Date.now()).slice(-6),
+                project: document.getElementById('boqProject').value,
+                code: document.getElementById('boqCode').value.trim(),
+                category: document.getElementById('boqCategory').value,
+                description: document.getElementById('boqDescription').value.trim(),
+                unit: document.getElementById('boqUnit').value,
+                plannedQty: Number(document.getElementById('boqQuantity').value) || 0,
+                unitPrice: Number(document.getElementById('boqUnitPrice').value) || 0
+            };
+            if (erpData.boq.some(item => item.project === line.project && item.code === line.code)) {
+                alert('Bu layihədə eyni BOQ kodu artıq mövcuddur.');
+                return;
+            }
+            erpData.boq.push(line);
+            renderAllViews();
+            closeModal('boqModal');
+            syncDataWithSheets();
+        }
+
+        function deleteBoq(idx) {
+            if (confirm('Bu BOQ sətrini silmək istədiyinizə əminsiniz?')) {
+                erpData.boq.splice(idx, 1);
+                renderAllViews();
+                syncDataWithSheets();
+            }
+        }
+
         function openFinanceModal() {
             document.getElementById('financeForm').reset();
             updateProjectSelectDropdowns();
+            updateFinanceBoqOptions();
             openModal('financeModal');
         }
 
@@ -1218,17 +1332,29 @@ function doPost(e) {
                 desc: document.getElementById('finDesc').value,
                 type: document.getElementById('finType').value,
                 category: document.getElementById('finCategory').value,
-                amount: Number(document.getElementById('finAmount').value) || 0
+                amount: Number(document.getElementById('finAmount').value) || 0,
+                boqCode: document.getElementById('finBoqCode').value,
+                submittedBy: document.getElementById('finSubmittedBy').value.trim(),
+                approvalStatus: 'Gözləyir',
+                approvedBy: ''
             };
             erpData.finance.push(newFin);
 
-            if (newFin.type === 'Xərc') {
-                const proj = erpData.projects.find(p => p.name === newFin.project);
-                if (proj) proj.spent += newFin.amount;
-            }
-
             renderAllViews();
             closeModal('financeModal');
+            syncDataWithSheets();
+        }
+
+        function updateFinanceApproval(idx, newStatus) {
+            const item = erpData.finance[idx];
+            if (!item || item.approvalStatus === 'Təsdiqləndi') return;
+            item.approvalStatus = newStatus;
+            item.approvedBy = newStatus === 'Təsdiqləndi' ? 'Mühasib / Direktor' : 'Mühasib / Direktor';
+            if (newStatus === 'Təsdiqləndi' && item.type === 'Xərc') {
+                const project = erpData.projects.find(p => p.name === item.project);
+                if (project) project.spent = (Number(project.spent) || 0) + Number(item.amount || 0);
+            }
+            renderAllViews();
             syncDataWithSheets();
         }
 
@@ -1263,7 +1389,7 @@ function doPost(e) {
         }
 
         function updateProjectSelectDropdowns() {
-            const ids = ['subProject', 'finProject', 'procProject', 'hrProject'];
+            const ids = ['subProject', 'finProject', 'procProject', 'hrProject', 'boqProject'];
             ids.forEach(id => {
                 const el = document.getElementById(id);
                 if (el) {
@@ -1272,6 +1398,19 @@ function doPost(e) {
                         el.innerHTML += `<option value="${p.name}">${p.name}</option>`;
                     });
                 }
+            });
+        }
+
+        function updateFinanceBoqOptions() {
+            const select = document.getElementById('finBoqCode');
+            const project = document.getElementById('finProject')?.value;
+            if (!select) return;
+            select.innerHTML = '<option value="">BOQ-dan kənar xərc</option>';
+            (erpData.boq || []).filter(item => item.project === project).forEach(item => {
+                const option = document.createElement('option');
+                option.value = item.code;
+                option.textContent = `${item.code} — ${item.description}`;
+                select.appendChild(option);
             });
         }
 
@@ -1294,6 +1433,7 @@ function doPost(e) {
             const titles = {
                 dashboard: 'FN Construction - İdarəetmə Paneli',
                 projects: 'Tikinti Layihələrinin Portfeli',
+                boq: 'Tam Detallı Smeta / BOQ Nəzarəti',
                 materials: 'Material və Texnika Anbarı',
                 subcontractors: 'Subpodratçılar və Smeta Aktları',
                 finance: 'Layihələr Üzrə Maliyyə və Kassa',
@@ -1311,6 +1451,7 @@ function doPost(e) {
         function renderAllViews() {
             renderDashboard();
             renderProjects();
+            renderBoq();
             renderMaterials();
             renderSubcontractors();
             renderFinance();
@@ -1425,6 +1566,39 @@ function doPost(e) {
             updateProjectSelectDropdowns();
         }
 
+        function renderBoq() {
+            const tbody = document.getElementById('boqTableBody');
+            if (!tbody) return;
+            if (!Array.isArray(erpData.boq)) erpData.boq = [];
+            tbody.innerHTML = '';
+            let plannedGrandTotal = 0;
+            let actualGrandTotal = 0;
+            erpData.boq.forEach((item, idx) => {
+                const planned = Number(item.plannedQty || 0) * Number(item.unitPrice || 0);
+                const actual = erpData.finance
+                    .filter(f => f.project === item.project && f.boqCode === item.code && f.type === 'Xərc' && (f.approvalStatus || 'Təsdiqləndi') === 'Təsdiqləndi')
+                    .reduce((sum, f) => sum + Number(f.amount || 0), 0);
+                const variance = planned - actual;
+                plannedGrandTotal += planned;
+                actualGrandTotal += actual;
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50';
+                tr.innerHTML = `
+                    <td class="p-3 font-mono font-bold text-amber-700">${item.code}</td>
+                    <td class="p-3 font-semibold text-slate-800">${item.project}</td>
+                    <td class="p-3"><span class="text-[10px] font-bold text-slate-400">${item.category}</span><br>${item.description}</td>
+                    <td class="p-3">${item.unit}</td><td class="p-3 font-bold">${Number(item.plannedQty).toLocaleString()}</td>
+                    <td class="p-3">${Number(item.unitPrice).toLocaleString()} ₼</td><td class="p-3 font-extrabold">${planned.toLocaleString()} ₼</td>
+                    <td class="p-3 font-extrabold text-red-600">${actual.toLocaleString()} ₼</td>
+                    <td class="p-3 font-extrabold ${variance < 0 ? 'text-red-600' : 'text-emerald-600'}">${variance.toLocaleString()} ₼</td>
+                    <td class="p-3 text-right"><button onclick="deleteBoq(${idx})" class="text-red-500"><i class="fa-regular fa-trash-can"></i></button></td>`;
+                tbody.appendChild(tr);
+            });
+            document.getElementById('boqPlannedTotal').innerText = plannedGrandTotal.toLocaleString() + ' ₼';
+            document.getElementById('boqActualTotal').innerText = actualGrandTotal.toLocaleString() + ' ₼';
+            document.getElementById('boqRemainingTotal').innerText = (plannedGrandTotal - actualGrandTotal).toLocaleString() + ' ₼';
+        }
+
         function renderMaterials() {
             const tbody = document.getElementById('materialsTableBody');
             if (!tbody) return;
@@ -1487,6 +1661,8 @@ function doPost(e) {
                 const typeBadge = f.type === 'Gəlir' 
                     ? '<span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 font-bold rounded text-[10px]">Gəlir</span>'
                     : '<span class="px-2 py-0.5 bg-red-100 text-red-700 font-bold rounded text-[10px]">Xərc</span>';
+                const approvalStatus = f.approvalStatus || 'Təsdiqləndi';
+                const approvalClass = approvalStatus === 'Təsdiqləndi' ? 'bg-emerald-100 text-emerald-700' : approvalStatus === 'Rədd edildi' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700';
 
                 tr.innerHTML = `
                     <td class="p-3.5 text-slate-500 font-mono text-xs">${f.date}</td>
@@ -1495,6 +1671,9 @@ function doPost(e) {
                     <td class="p-3.5 text-slate-500">${f.category}</td>
                     <td class="p-3.5">${typeBadge}</td>
                     <td class="p-3.5 font-extrabold ${f.type === 'Gəlir' ? 'text-emerald-600' : 'text-slate-800'}">${Number(f.amount).toLocaleString()} ₼</td>
+                    <td class="p-3.5 text-slate-500">${f.submittedBy || 'Sistem'}${f.boqCode ? `<br><span class="font-mono text-[10px] text-amber-700">${f.boqCode}</span>` : ''}</td>
+                    <td class="p-3.5"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${approvalClass}">${approvalStatus}</span></td>
+                    <td class="p-3.5 text-right space-x-1">${approvalStatus === 'Gözləyir' ? `<button onclick="updateFinanceApproval(${idx}, 'Təsdiqləndi')" class="px-2 py-1 bg-emerald-50 text-emerald-700 rounded font-bold text-[10px]">Təsdiq</button><button onclick="updateFinanceApproval(${idx}, 'Rədd edildi')" class="px-2 py-1 bg-red-50 text-red-700 rounded font-bold text-[10px]">Rədd</button>` : ''}</td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -1724,11 +1903,12 @@ function doPost(e) {
                     desc: `Satınalma: ${item.item} (${item.quantity} ${item.unit})`,
                     category: 'Material Alışı',
                     type: 'Xərc',
-                    amount: item.estimatedCost
+                    amount: item.estimatedCost,
+                    boqCode: '',
+                    submittedBy: item.requestedBy,
+                    approvalStatus: 'Gözləyir',
+                    approvedBy: ''
                 });
-
-                const proj = erpData.projects.find(p => p.name === item.project);
-                if (proj) proj.spent += item.estimatedCost;
 
                 const mat = erpData.materials.find(m => m.name.toLowerCase().includes(item.item.toLowerCase()));
                 if (mat) mat.stock += item.quantity;
@@ -1771,6 +1951,7 @@ function doPost(e) {
 
         function applySheetsData(sheetData) {
             const projects = rowsToObjects(sheetData.Projects);
+            const boq = rowsToObjects(sheetData.BOQ);
             const materials = rowsToObjects(sheetData.Materials);
             const subcontractors = rowsToObjects(sheetData.Subcontractors);
             const finance = rowsToObjects(sheetData.Finance);
@@ -1784,6 +1965,11 @@ function doPost(e) {
                 progress: Number(p['İcra %']) || 0, status: p['Status'],
                 startDate: p['Başlama'], endDate: p['Bitmə']
             }));
+            if (boq.length) erpData.boq = boq.map(b => ({
+                id: b['ID'], project: b['Layihə'], code: b['BOQ Kodu'], category: b['Kateqoriya'],
+                description: b['Təsvir'], unit: b['Vahid'], plannedQty: Number(b['Plan Miqdarı']) || 0,
+                unitPrice: Number(b['Vahid Qiyməti']) || 0
+            }));
             if (materials.length) erpData.materials = materials.map(m => ({
                 sku: m['SKU'], name: m['Material Adı'], category: m['Kateqoriya'], unit: m['Vahid'],
                 price: Number(m['Qiymət']) || 0, stock: Number(m['Stok']) || 0
@@ -1795,7 +1981,9 @@ function doPost(e) {
             }));
             if (finance.length) erpData.finance = finance.map(f => ({
                 date: f['Tarix'], project: f['Layihə'], desc: f['Təsvir'], category: f['Kateqoriya'],
-                type: f['Növ'], amount: Number(f['Məbləğ']) || 0
+                type: f['Növ'], amount: Number(f['Məbləğ']) || 0, boqCode: f['BOQ Kodu'] || '',
+                submittedBy: f['Daxil edən'] || 'Sistem', approvalStatus: f['Təsdiq Statusu'] || 'Təsdiqləndi',
+                approvedBy: f['Təsdiq edən'] || ''
             }));
             if (employees.length) erpData.employees = employees.map(e => ({
                 name: e['Ad Soyad'], role: e['Vəzifə'], project: e['Layihə'],
@@ -1846,7 +2034,7 @@ function doPost(e) {
             if (!googleWebAppUrl) return;
             try {
                 const sheetData = await loadSheetsJsonp(googleWebAppUrl);
-                const hasErpSheets = ['Projects', 'Materials', 'Finance', 'Employees', 'Procurement']
+                const hasErpSheets = ['Projects', 'BOQ', 'Materials', 'Finance', 'Employees', 'Procurement']
                     .some(name => Array.isArray(sheetData[name]) && sheetData[name].length > 1);
 
                 if (hasErpSheets) {
@@ -1966,6 +2154,10 @@ function doPost(e) {
                     ['ID', 'Layihə Adı', 'Sifarişçi', 'Ünvan', 'Büdcə', 'Faktiki Xərc', 'İcra %', 'Status', 'Başlama', 'Bitmə'],
                     ...erpData.projects.map(p => [p.id, p.name, p.client, p.location, p.budget, p.spent, p.progress, p.status, p.startDate, p.endDate])
                 ],
+                BOQ: [
+                    ['ID', 'Layihə', 'BOQ Kodu', 'Kateqoriya', 'Təsvir', 'Vahid', 'Plan Miqdarı', 'Vahid Qiyməti', 'Plan Cəmi'],
+                    ...(erpData.boq || []).map(b => [b.id, b.project, b.code, b.category, b.description, b.unit, b.plannedQty, b.unitPrice, Number(b.plannedQty) * Number(b.unitPrice)])
+                ],
                 Materials: [
                     ['SKU', 'Material Adı', 'Kateqoriya', 'Vahid', 'Qiymət', 'Stok'],
                     ...erpData.materials.map(m => [m.sku, m.name, m.category, m.unit, m.price, m.stock])
@@ -1975,8 +2167,8 @@ function doPost(e) {
                     ...erpData.subcontractors.map(s => [s.id, s.name, s.project, s.scope, s.contractAmount, s.paidAmount, s.form2Status])
                 ],
                 Finance: [
-                    ['Tarix', 'Layihə', 'Təsvir', 'Kateqoriya', 'Növ', 'Məbləğ'],
-                    ...erpData.finance.map(f => [f.date, f.project, f.desc, f.category, f.type, f.amount])
+                    ['Tarix', 'Layihə', 'Təsvir', 'Kateqoriya', 'Növ', 'Məbləğ', 'BOQ Kodu', 'Daxil edən', 'Təsdiq Statusu', 'Təsdiq edən'],
+                    ...erpData.finance.map(f => [f.date, f.project, f.desc, f.category, f.type, f.amount, f.boqCode || '', f.submittedBy || 'Sistem', f.approvalStatus || 'Təsdiqləndi', f.approvedBy || ''])
                 ],
                 Employees: [
                     ['Ad Soyad', 'Vəzifə', 'Layihə', 'Maaş', 'Telefon', 'Status'],
